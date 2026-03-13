@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portal de Documentação Interativa de Alta Disponibilidade — Solus Saúde">
+    <title>Solus HA | Portal de Engenharia de Infraestrutura</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #004a99;
+            --primary-glow: rgba(0, 74, 153, 0.3);
+            --secondary: #c2185b;
+            --accent: #8e24aa;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #0ea5e9;
+
+            --bg-page: #f0f4f8;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-sidebar: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 40px -10px rgba(0,0,0,0.12);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.6);
+        }
+
+        .dark-mode {
+            --bg-page: #020617;
+            --bg-card: rgba(15, 23, 42, 0.65);
+            --bg-sidebar: #0f172a;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse at 10% 20%, rgba(0,74,153,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(194,24,91,0.07) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(142,36,170,0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .dark-mode body::before {
+            background:
+                radial-gradient(ellipse at 10% 20%, rgba(0,74,153,0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(194,24,91,0.12) 0%, transparent 50%);
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            padding: 0.9rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(12px);
+        }
+
+        .theme-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { background: var(--bg-page); }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 5rem 2rem 3rem;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,74,153,0.08);
+            border: 1px solid rgba(0,74,153,0.2);
+            color: var(--primary);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 900;
+            line-height: 1.15;
+            background: linear-gradient(135deg, var(--primary) 0%, #0070e0 40%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 580px;
+            margin: 0 auto 2rem;
+            line-height: 1.7;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Cards Grid */
+        .cards-section {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1rem 2rem 5rem;
+            width: 100%;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .module-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 2rem;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: var(--card-accent, var(--primary));
+            border-radius: 28px 28px 0 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .module-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 60px -15px rgba(0,0,0,0.18);
+        }
+
+        .module-card:hover::before { opacity: 1; }
+
+        .card-icon-wrap {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .card-tag {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .card-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.65;
+            flex: 1;
+        }
+
+        .card-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .feature-pill {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(0,0,0,0.04);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .card-cta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        .cta-arrow {
+            width: 32px; height: 32px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            transition: transform 0.2s;
+        }
+        .module-card:hover .cta-arrow { transform: translateX(4px); }
+
+        /* Footer */
+        footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            background: var(--bg-sidebar);
+        }
+
+        /* Divider */
+        .divider {
+            width: 60px;
+            height: 3px;
+            border-radius: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            margin: 1rem auto 2rem;
+        }
+    </style>
+</head>
+<body id="app-body">
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="location.reload()">
+            <svg width="210" height="40" viewBox="0 8 280 40" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+              <path d="M 10 15 L 15 15 L 15 33 L 10 33 A 9 9 0 0 1 10 15 Z" fill="#0157c8" />
+              <path d="M 33 15 L 38 15 A 9 9 0 0 1 38 33 L 33 33 Z" fill="#e11c5f" />
+              <path d="M 15 10 A 9 9 0 0 1 33 10 L 33 15 L 15 15 Z" fill="#e11c5f" />
+              <path d="M 15 33 L 33 33 L 33 38 A 9 9 0 0 1 15 38 Z" fill="#00439c" />
+              <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
+              <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
+              <text x="50" y="34" font-family="'Outfit', 'Arial', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
+              <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
+            </svg>
+        </div>
+        <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
+    </header>
+
+    <main style="flex: 1; position: relative; z-index: 1;">
+
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-badge">
+                <i class="fa-solid fa-server"></i>
+                Engenharia de Infraestrutura
+            </div>
+            <h1>Portal de Alta<br>Disponibilidade</h1>
+            <p>Documentação interativa e simulações visuais da arquitetura de Alta Disponibilidade da Solus Saúde.</p>
+
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-value">2</div>
+                    <div class="stat-label">Módulos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: var(--secondary);">HA</div>
+                    <div class="stat-label">Alta Disponibilidade</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" style="color: var(--success);">99%</div>
+                    <div class="stat-label">Uptime Target</div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+        </section>
+
+        <!-- Cards -->
+        <section class="cards-section">
+            <p class="section-title"><i class="fa-solid fa-grid-2"></i> &nbsp;Escolha um módulo para começar</p>
+
+            <div class="cards-grid">
+
+                <!-- Card 1: Visão Geral do Cluster -->
+                <a href="visaogeral.html" class="module-card" style="--card-accent: var(--primary);">
+                    <div class="card-header">
+                        <div class="card-icon-wrap" style="background: linear-gradient(135deg, #004a99, #0070e0);">
+                            <i class="fa-solid fa-diagram-project"></i>
+                        </div>
+                        <div>
+                            <div class="card-tag" style="background: rgba(0,74,153,0.1); color: var(--primary);">Simulação</div>
+                            <div class="card-title">Visão Geral do Cluster</div>
+                        </div>
+                    </div>
+                    <p class="card-desc">
+                        Simulação interativa da arquitetura de Alta Disponibilidade com Docker Swarm, VIP Flutuante (Keepalived), GlusterFS e Oracle. Veja o failover acontecer em tempo real.
+                    </p>
+                    <div class="card-features">
+                        <span class="feature-pill">Docker Swarm</span>
+                        <span class="feature-pill">Keepalived / VIP</span>
+                        <span class="feature-pill">Oracle 19c</span>
+                        <span class="feature-pill">Requisitos</span>
+                    </div>
+                    <div class="card-cta">
+                        <span style="color: var(--primary);">Abrir simulação</span>
+                        <div class="cta-arrow" style="background: linear-gradient(135deg, #004a99, #0070e0);">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Card 2: GlusterFS -->
+                <a href="glusterfs.html" class="module-card" style="--card-accent: var(--secondary);">
+                    <div class="card-header">
+                        <div class="card-icon-wrap" style="background: linear-gradient(135deg, #c2185b, #e91e8c);">
+                            <i class="fa-solid fa-hard-drive"></i>
+                        </div>
+                        <div>
+                            <div class="card-tag" style="background: rgba(194,24,91,0.1); color: var(--secondary);">Storage HA</div>
+                            <div class="card-title">Arquitetura GlusterFS</div>
+                        </div>
+                    </div>
+                    <p class="card-desc">
+                        Demonstração detalhada da replicação tripla de dados com GlusterFS, Self-Healing automático, perda de quorum e roteiro completo de implementação passo a passo.
+                    </p>
+                    <div class="card-features">
+                        <span class="feature-pill">GlusterFS</span>
+                        <span class="feature-pill">Réplica 3x</span>
+                        <span class="feature-pill">Auto-Healing</span>
+                        <span class="feature-pill">Guia Instalação</span>
+                    </div>
+                    <div class="card-cta">
+                        <span style="color: var(--secondary);">Abrir simulação</span>
+                        <div class="cta-arrow" style="background: linear-gradient(135deg, #c2185b, #e91e8c);">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </a>
+
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        Elaborado por: <strong>Paulo Ricardo Borges</strong> — Analista de Infraestrutura &nbsp;|&nbsp; Solus Saúde HA v2.0
+    </footer>
+
+    <script>
+        const btn = document.getElementById('theme-toggle');
+        const body = document.getElementById('app-body');
+
+        // Persist theme
+        if (localStorage.getItem('theme') === 'dark') {
+            body.classList.add('dark-mode');
+            btn.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+
+        btn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            btn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+    </script>
+</body>
+</html>

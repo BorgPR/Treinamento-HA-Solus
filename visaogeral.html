@@ -1,0 +1,1029 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Simulação High Availability - Solus HA v1.5.2">
+    <title>Solus HA | Cluster de Engenharia v1.5.2</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+
+    <style>
+        :root {
+            --primary: #004a99;
+            --primary-glow: rgba(0, 74, 153, 0.4);
+            --secondary: #c2185b;
+            --accent: #8e24aa;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #0ea5e9;
+
+            --bg-page: #f8fafc;
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --bg-sidebar: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+        }
+
+        .dark-mode {
+            --bg-page: #020617;
+            --bg-card: rgba(15, 23, 42, 0.6);
+            --bg-sidebar: #0f172a;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --glass-bg: rgba(15, 23, 42, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        * { box-sizing: border-box; transition: background-color 0.3s, color 0.3s, border-color 0.3s, transform 0.3s; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+        }
+
+        header {
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        nav {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            width: 100%;
+        }
+
+        .page {
+            display: none;
+            width: 100%;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page.active.grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        .doc-content {
+            padding: 1.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .doc-section {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .doc-section h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .doc-section h3 {
+            color: var(--text-main);
+            font-size: 1.2rem;
+            margin-top: 2rem;
+        }
+
+        .tech-pill {
+            display: inline-block;
+            padding: 2px 10px;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-right: 5px;
+        }
+
+        /* --- DIAGRAM CORE --- */
+        .diagram-area {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            min-height: auto;
+        }
+
+        .gateway-container { display: flex; justify-content: center; z-index: 10; scale: 0.9; }
+        
+        .zone {
+            border: 2px dashed var(--border);
+            border-radius: 20px;
+            padding: 1.25rem;
+            position: relative;
+            background: rgba(0,0,0,0.01);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .zone-label {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: var(--bg-page);
+            padding: 1px 10px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        /* --- SERVER BOXES --- */
+        .cluster-row {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+        }
+
+        .server-node {
+            width: 210px;
+            flex: none;
+            padding: 1rem;
+            border-radius: 16px;
+            background: var(--bg-sidebar);
+            border: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            z-index: 10;
+            transition: all 0.5s ease;
+        }
+
+        .server-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .server-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+            gap: 8px;
+        }
+
+        .service-mini {
+            background: rgba(0,0,0,0.03);
+            border-radius: 10px;
+            padding: 6px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .replica-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.55rem;
+            padding: 1px 5px;
+            border-radius: 6px;
+            font-weight: 900;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            z-index: 20;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-3px); }
+        }
+
+        .service-disk .data-file {
+            opacity: 0.5 !important;
+            font-size: 1.2rem;
+            filter: drop-shadow(0 0 5px rgba(0,0,0,0.1));
+        }
+        .service-mini i { font-size: 1.1rem; }
+        .service-mini span { font-size: 0.6rem; font-weight: 600; opacity: 0.7; }
+
+        .server-status {
+            font-size: 9px;
+            font-weight: 800;
+            text-align: center;
+            padding: 4px;
+            border-radius: 6px;
+            background: rgba(0,0,0,0.05);
+        }
+
+        /* Server States */
+        .server-node.master { border-color: var(--success); box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+        .server-node.master .server-status { background: var(--success); color: white; }
+        
+        .server-node.failed { opacity: 0.5; filter: grayscale(1); border-style: dotted; }
+        .server-node.failed .server-status { background: var(--danger); color: white; }
+
+        /* VIP Tag */
+        #vip-indicator {
+            position: absolute;
+            background: var(--success);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 800;
+            z-index: 100;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+            top: -15px;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Arrows */
+        #svg-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .link-static { stroke: var(--border); stroke-width: 2; fill: none; }
+        .link-flow { 
+            stroke: var(--primary); stroke-width: 3; fill: none; 
+            stroke-dasharray: 8, 4; animation: dash 1s linear infinite; 
+        }
+        .link-alert { stroke: var(--danger); stroke-width: 3; fill: none; stroke-dasharray: 4, 4; animation: dash 0.5s linear infinite; }
+
+        @keyframes dash { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
+
+        /* Sidebar Control */
+        .sidebar { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1.5rem; 
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+        }
+        .card { padding: 1.5rem; border-radius: 24px; }
+        
+        .progress-bar { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+        .p-step { flex: 1; height: 4px; background: var(--border); border-radius: 2px; }
+        .p-step.active { background: var(--primary); box-shadow: 0 0 8px var(--primary-glow); }
+
+        .btn {
+            width: 100%; padding: 0.8rem; border-radius: 12px; border: none; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px;
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--secondary), var(--accent)); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(194, 24, 91, 0.3); 
+        }
+        .btn-secondary { background: var(--bg-sidebar); border: 1px solid var(--border); color: var(--text-main); }
+
+        .log-box {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: var(--text-muted);
+            max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.02); padding: 10px; border-radius: 12px;
+        }
+
+        .theme-btn {
+            background: none; border: 1px solid var(--border); border-radius: 10px; padding: 8px; cursor: pointer;
+            color: var(--text-main);
+        }
+
+    </style>
+</head>
+<body id="app-body">
+    <header>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="logo-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="location.reload()">
+                <svg width="210" height="40" viewBox="0 8 280 40" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+                  <path d="M 10 15 L 15 15 L 15 33 L 10 33 A 9 9 0 0 1 10 15 Z" fill="#0157c8" />
+                  <path d="M 33 15 L 38 15 A 9 9 0 0 1 38 33 L 33 33 Z" fill="#e11c5f" />
+                  <path d="M 15 10 A 9 9 0 0 1 33 10 L 33 15 L 15 15 Z" fill="#e11c5f" />
+                  <path d="M 15 33 L 33 33 L 33 38 A 9 9 0 0 1 15 38 Z" fill="#00439c" />
+                  <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
+                  <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
+                  <text x="50" y="34" font-family="'Outfit', 'Arial', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
+                  <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
+                </svg>
+            </div>
+            <nav style="margin-left: 15px;">
+                <a href="#" class="nav-link active" onclick="switchPage('sim', this)" style="padding: 6px 12px; font-size: 0.85rem;">Simulador</a>
+                <a href="#" class="nav-link" onclick="switchPage('req', this)" style="padding: 6px 12px; font-size: 0.85rem;">Requisitos</a>
+                <a href="#" class="nav-link" onclick="switchPage('doc', this)" style="padding: 6px 12px; font-size: 0.85rem;">Documentação</a>
+            </nav>
+        </div>
+        <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
+    </header>
+
+    <main class="main-container">
+        <!-- Dashboard Simulation -->
+        <div class="page active grid-layout" id="page-sim">
+            <div class="diagram-area glass" id="diagram-canvas">
+                <svg id="svg-layer" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1;"></svg>
+                
+                <!-- Entry Point -->
+                <div class="gateway-container">
+                    <div class="server-node glass" id="gateway" style="border-style: dashed; width: 300px; flex: none;">
+                        <div class="server-header"><span>EXTERNO: INTERNET / VPN</span> <i class="fa-solid fa-cloud"></i></div>
+                        <div class="server-content" style="display: flex; justify-content: center; padding: 5px;">
+                            <div class="service-mini" style="width: 100%;"><i class="fa-solid fa-globe" style="color:var(--info)"></i> HTTPS TRAFFIC</div>
+                        </div>
+                        <div class="server-status" style="background: var(--info); color: white;">NAT ACTIVE</div>
+                    </div>
+                </div>
+
+                <!-- App Layer -->
+                <div class="zone">
+                    <div class="zone-label">Application Layer (Hyper-Converged Cluster)</div>
+                    <div class="cluster-row" id="node-container">
+                        <div id="vip-indicator">VIP: 192.168.1.100</div>
+                        
+                        <!-- Node 1 -->
+                        <div class="server-node glass" id="node-1">
+                            <div class="server-header"><span>SERVER-01</span> <i class="fa-brands fa-linux"></i></div>
+                            <div class="server-content">
+                                <!-- Local Proxy Entry -->
+                                <div class="service-mini proxy" title="Nginx Reverse Proxy & SSL" style="grid-column: span 2; background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3);">
+                                    <i class="fa-solid fa-lock" style="color: var(--success); font-size: 0.9rem;"></i>
+                                    <span style="font-size: 0.65rem; font-weight: 800;">NGINX PROXY (SSL)</span>
+                                </div>
+                                <div class="service-mini service-php" title="Solus Web"><i class="fa-brands fa-php" style="color:#777bb4"></i><span>PHP</span></div>
+                                <div class="service-mini service-api" title="API Linux"><i class="fa-solid fa-server" style="color:var(--primary)"></i><span>API</span></div>
+                                <div class="service-mini service-tiss" title="WS TISS"><i class="fa-solid fa-notes-medical" style="color:var(--accent)"></i><span>TISS</span></div>
+                                <div class="service-mini service-disk" title="GlusterFS Brick" style="background: rgba(16, 185, 129, 0.1);"><i class="fa-solid fa-hard-drive" style="color: var(--success);"></i><span>DISK</span></div>
+                            </div>
+                            <div class="server-status">SYSTEM ONLINE</div>
+                        </div>
+
+                        <!-- Node 2 -->
+                        <div class="server-node glass" id="node-2">
+                            <div class="server-header"><span>SERVER-02</span> <i class="fa-brands fa-linux"></i></div>
+                            <div class="server-content">
+                                <div class="service-mini proxy" style="grid-column: span 2; background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3);">
+                                    <i class="fa-solid fa-lock" style="color: var(--success); font-size: 0.9rem;"></i>
+                                    <span style="font-size: 0.65rem; font-weight: 800;">NGINX PROXY (SSL)</span>
+                                </div>
+                                <div class="service-mini service-php"><i class="fa-brands fa-php" style="color:#777bb4"></i><span>PHP</span></div>
+                                <div class="service-mini service-api"><i class="fa-solid fa-server" style="color:var(--primary)"></i><span>API</span></div>
+                                <div class="service-mini service-tiss"><i class="fa-solid fa-notes-medical" style="color:var(--accent)"></i><span>TISS</span></div>
+                                <div class="service-mini service-disk" style="background: rgba(16, 185, 129, 0.1);"><i class="fa-solid fa-hard-drive" style="color: var(--success);"></i><span>DISK</span></div>
+                            </div>
+                            <div class="server-status">SYSTEM ONLINE</div>
+                        </div>
+
+                        <!-- Node 3 -->
+                        <div class="server-node glass" id="node-3">
+                            <div class="server-header"><span>SERVER-03</span> <i class="fa-brands fa-linux"></i></div>
+                            <div class="server-content">
+                                <div class="service-mini proxy" style="grid-column: span 2; background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3);">
+                                    <i class="fa-solid fa-lock" style="color: var(--success); font-size: 0.9rem;"></i>
+                                    <span style="font-size: 0.65rem; font-weight: 800;">NGINX PROXY (SSL)</span>
+                                </div>
+                                <div class="service-mini service-php"><i class="fa-brands fa-php" style="color:#777bb4"></i><span>PHP</span></div>
+                                <div class="service-mini service-api"><i class="fa-solid fa-server" style="color:var(--primary)"></i><span>API</span></div>
+                                <div class="service-mini service-tiss"><i class="fa-solid fa-notes-medical" style="color:var(--accent)"></i><span>TISS</span></div>
+                                <div class="service-mini service-disk" style="background: rgba(16, 185, 129, 0.1);"><i class="fa-solid fa-hard-drive" style="color: var(--success);"></i><span>DISK</span></div>
+                            </div>
+                            <div class="server-status">SYSTEM ONLINE</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DB Layer -->
+                <div class="zone" style="border-color: var(--accent); padding: 1rem;">
+                    <div class="zone-label" style="color: var(--accent); border-color: var(--accent);">Persistent Data Layer</div>
+                    <div class="cluster-row">
+                        <div class="server-node glass" id="database" style="min-width: 320px; border-color: var(--accent); flex: none;">
+                            <div class="server-header"><span>DEDICATED DATABASE</span> <i class="fa-solid fa-database" style="color: var(--accent);"></i></div>
+                            <div class="server-content" style="display: flex; gap: 15px; justify-content: center; padding: 5px;">
+                                <i class="fa-solid fa-server" style="font-size: 1.8rem; color: var(--accent);"></i>
+                                <div style="display: flex; flex-direction: column; justify-content: center;">
+                                    <div style="font-weight: 700; font-size: 0.85rem;">ORACLE 19C</div>
+                                    <span style="font-size: 0.65rem; opacity: 0.8;">Persistent Storage & Logs</span>
+                                </div>
+                            </div>
+                            <div class="server-status">DEDICATED INSTANCE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <aside class="sidebar">
+                <div class="card glass">
+                    <div class="progress-bar" id="stepper">
+                        <div class="p-step active"></div><div class="p-step"></div><div class="p-step"></div>
+                        <div class="p-step"></div><div class="p-step"></div><div class="p-step"></div>
+                    </div>
+                    
+                    <h3 id="step-title" style="margin: 0 0 10px;">Monitor de Operação</h3>
+                    <div id="step-status" style="font-size: 0.75rem; font-weight: 700; display: inline-block; padding: 4px 12px; border-radius: 20px; background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                        OPERAÇÃO NORMAL
+                    </div>
+                    
+                    <p id="step-desc" style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin: 10px 0;">
+                        A infraestrutura está operando em regime de alta disponibilidade. Cada servidor contém réplicas dos serviços Apache+PHP, TISS e API Linux.
+                    </p>
+
+                    <div class="controls">
+                        <button class="btn btn-primary" id="btn-next">PRÓXIMO PASSO</button>
+                        <button class="btn btn-secondary" id="btn-reset">RESETAR</button>
+                    </div>
+                </div>
+
+                <div class="card glass">
+                    <h4 style="margin: 0 0 10px; font-size: 0.75rem; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 5px;">LOG DO CLUSTER</h4>
+                    <div class="log-box" id="log">
+                        <div>[OK] Cluster Ready</div>
+                        <div>[OK] Raft Consensus Active</div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Hardware Requirements Page -->
+    <div class="page" id="page-req">
+        <div class="doc-content">
+            <div class="doc-section">
+                <h2><i class="fa-solid fa-list-check"></i> Requisitos de Hardware (Por Nó)</h2>
+                <p>Especificações mínimas recomendadas para cada nó do cluster de aplicação para garantir o desempenho e estabilidade do Solus HA.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                <!-- S.O -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--primary); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-brands fa-linux" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: var(--primary);">Sistema Operacional</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">Debian ou derivados</p>
+                        <span class="tech-pill">Versão Estável</span> <span class="tech-pill">LTS</span>
+                    </div>
+                </div>
+
+                <!-- vCPU -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--secondary); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-solid fa-microchip" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: var(--secondary);">Processamento</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">2 vCPUs</p>
+                        <span class="tech-pill">Minimo Sugerido</span>
+                    </div>
+                </div>
+
+                <!-- Memoria -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--info); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-solid fa-memory" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: var(--info);">Memória RAM</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">8 GB de RAM</p>
+                        <span class="tech-pill">DDR4/DDR5</span>
+                    </div>
+                </div>
+
+                <!-- Disco SO -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--accent); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-solid fa-hard-drive" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: var(--accent);">Disco (S.O)</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">50 GB SSD/NVMe</p>
+                        <span class="tech-pill">Partição Raiz</span>
+                    </div>
+                </div>
+
+                <!-- Disco Dados -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--success); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-solid fa-database" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: var(--success);">Disco de Dados (LVM)</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">300 GB (Expansível)</p>
+                        <span class="tech-pill">Formato LVM</span> <span class="tech-pill">Replicado</span>
+                    </div>
+                </div>
+
+                <!-- Privilégios (Sudo) -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--warning); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-solid fa-user-shield" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div style="min-width: 0;">
+                        <h4 style="margin: 0; color: var(--warning);">Privilégios</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Usuário com poderes administrativos</p>
+                        <span class="tech-pill">Sudo</span> <span class="tech-pill">Root</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="doc-section" style="margin-top: 3rem; border-bottom: none;">
+                <h3><i class="fa-solid fa-circle-info"></i> Notas de Implementação</h3>
+                <ul>
+                    <li><strong>LVM:</strong> O disco de dados de 300GB deve ser particionado com LVM para permitir expansões futuras dinâmicas.</li>
+                    <li><strong>Versão Linux:</strong> Recomendamos Debian 12 (Bookworm) ou Ubuntu 22.04 LTS para melhor compatibilidade com a stack Docker.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technical Documentation Page -->
+    <div class="page" id="page-doc">
+        <div class="doc-content">
+            <div class="doc-section">
+                <h2><i class="fa-solid fa-book"></i> Documentação: Arquitetura Solus Enterprise</h2>
+                <p>Esta documentação descreve as decisões de engenharia aplicadas na infraestrutura de Alta Disponibilidade (HA) do Solus, detalhando como o sistema garante resiliência e continuidade em ambientes críticos.</p>
+                <div style="margin-top: 15px; padding: 15px; background: rgba(99, 102, 241, 0.05); border-radius: 12px; border-left: 4px solid var(--primary);">
+                    <strong>Nota sobre Modularidade:</strong> Este modelo usa como referência um ambiente <strong>Local (On-Premise)</strong>, mas sua estrutura é modular. Ele pode ser adaptado para <strong>Servidores em Nuvem (VPS)</strong> apenas alterando o componente de entrada de tráfego.
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h3>1. Camada de Aplicação (Cluster de Servidores)</h3>
+                <p><span class="tech-pill">Docker Swarm</span> <span class="tech-pill">Proxy Nginx</span> <span class="tech-pill">Segurança SSL</span></p>
+                <p>A aplicação roda em um cluster orquestrado. Cada servidor (nó) possui a cópia exata de todos os serviços, garantindo que se um hardware falhar, os outros assumam o trabalho sem interrupção.</p>
+                <ul>
+                    <li><strong>Proxy Reverso:</strong> O Nginx dentro de cada servidor recebe as conexões e cuida da segurança SSL. Isso acelera o acesso e protege os sistemas internos (PHP e APIs) de acessos diretos.</li>
+                    <li><strong>Redistribuição de Carga:</strong> Em caso de queda, o Swarm move as réplicas para os nós ativos. <strong>Importante:</strong> Ao retornar, os serviços NÃO voltam sozinhos para o nó recuperado. Isso evita "efeito sanfona" e garante que o reequilíbrio ocorra apenas com autorização humana em janela de manutenção.</li>
+                </ul>
+            </div>
+
+            <div class="doc-section">
+                <h3>2. Camada de Armazenamento (Disco Compartilhado)</h3>
+                <p><span class="tech-pill">GlusterFS</span> <span class="tech-pill">Replicação Tripla</span> <span class="tech-pill">Auto-Correção</span></p>
+                <p>Em vez de um servidor de arquivos central (que seria um ponto único de falha), usamos armazenamento distribuído onde os discos de todos os servidores do cluster trabalham juntos.</p>
+                <ul>
+                    <li><strong>Sincronismo:</strong> Os arquivos (PDFs, fotos, documentos) são gravados simultaneamente em 3 locais diferentes. Se um servidor queimar, nenhum dado é perdido.</li>
+                    <li><strong>Recuperação Automática:</strong> Quando um servidor volta a ficar online após uma falha, o sistema percebe os dados desatualizados e inicia a correção automática entre os discos.</li>
+                </ul>
+            </div>
+
+            <div class="doc-section">
+                <h3>3. Isolamento do Banco de Dados (Oracle)</h3>
+                <p><span class="tech-pill">Oracle 19c</span> <span class="tech-pill">Hardware Dedicado</span></p>
+                <p>O Banco de Dados Oracle é mantido em servidores dedicados. Isso isola o "coração" dos dados da carga de processamento do site, garantindo estabilidade e evitando que uma lentidão no portal web afete a gravação das transações do banco.</p>
+            </div>
+
+            <div class="doc-section">
+                <h3>4. Adaptação: Ambiente Local vs. Nuvem (VPS)</h3>
+                <p><span class="tech-pill">IP Virtual</span> <span class="tech-pill">Balanceador de Carga</span> <span class="tech-pill">Flexibilidade</span></p>
+                <p>O projeto foi desenhado para ser flexível. Dependendo de onde ele é instalado, mudamos apenas a porta de entrada:</p>
+                <ul>
+                    <li><strong>Ambiente Local (Físico):</strong> Usamos a técnica de <strong>IP Virtual (VIP)</strong> com Keepalived. O IP "pula" de um servidor para o outro instantaneamente em caso de queda.</li>
+                    <li><strong>Ambiente em Nuvem (VPS):</strong> Como provedores de nuvem costumam bloquear IPs Virtuais manuais, substituímos o Keepalived por um <strong>Balanceador de Carga</strong> do próprio provedor (Cloud Load Balancer). O resto da estrutura (Nginx, Swarm e Discos) permanece exatamente igual.</li>
+                </ul>
+            </div>
+
+            <div class="doc-section">
+                <h3>5. Automação vs. Intervenção Manual</h3>
+                <style>
+                    .tech-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+                    .tech-table th, .tech-table td { border: 1px solid var(--border); padding: 12px; text-align: left; }
+                    .tech-table th { background: rgba(99, 102, 241, 0.05); color: var(--primary); }
+                    .tag-auto { color: var(--success); font-weight: 700; }
+                    .tag-manual { color: var(--accent); font-weight: 700; }
+                </style>
+                <table class="tech-table">
+                    <thead>
+                        <tr>
+                            <th>Recurso/Ação</th>
+                            <th>Tipo</th>
+                            <th>Descrição</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Failover de IP (VIP)</td>
+                            <td><span class="tag-auto">AUTOMÁTICO</span></td>
+                            <td>Migração do IP de entrada entre nós via Keepalived.</td>
+                        </tr>
+                        <tr>
+                            <td>Redistribuição de Réplicas</td>
+                            <td><span class="tag-auto">AUTOMÁTICO</span></td>
+                            <td>Na ocorrência de falha, os serviços migram para os nós ativos.</td>
+                        </tr>
+                        <tr>
+                            <td>Rebalanceamento de Carga</td>
+                            <td><span class="tag-manual">OPCIONAL</span></td>
+                            <td>Decisão estratégica entre manter a estabilidade atual ou forçar o retorno para o nó recuperado.</td>
+                        </tr>
+                        <tr>
+                            <td>Sincronismo de Arquivos</td>
+                            <td><span class="tag-auto">AUTOMÁTICO</span></td>
+                            <td>O GlusterFS mantém os blocos de dados idênticos em rede.</td>
+                        </tr>
+                        <tr>
+                            <td>Auto-Healing (Storage)</td>
+                            <td><span class="tag-auto">AUTOMÁTICO</span></td>
+                            <td>Recuperação de dados defasados quando um nó retorna ao cluster.</td>
+                        </tr>
+                        <tr>
+                            <td>Troca de Hardware Físico</td>
+                            <td><span class="tag-manual">MANUAL</span></td>
+                            <td>Substituição de peças, discos físicos ou cabos de rede.</td>
+                        </tr>
+                        <tr>
+                            <td>Ajuste de Configuração</td>
+                            <td><span class="tag-manual">MANUAL</span></td>
+                            <td>Alteração de regras de negócio ou limites de recursos da stack.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 1.5rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; background: var(--bg-sidebar);">
+        Elaborado por: <strong>Paulo Ricardo Borges</strong> - Analista de Infraestrutura
+    </footer>
+
+    <script>
+        // --- THEME PERSISTENCE ---
+        (function() {
+            if (localStorage.getItem('solus-theme') === 'dark') {
+                document.getElementById('app-body').classList.add('dark-mode');
+                var btn = document.getElementById('theme-toggle');
+                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        })();
+
+        const servicesTemplate = {
+            'proxy': '<div class="service-mini proxy" title="Nginx Reverse Proxy & SSL" style="grid-column: span 2; background: rgba(16, 185, 129, 0.05); border: 1px dashed rgba(16, 185, 129, 0.3);"><i class="fa-solid fa-lock" style="color: var(--success); font-size: 0.9rem;"></i><span style="font-size: 0.65rem; font-weight: 800;">NGINX PROXY (SSL)</span></div>',
+            'php': '<div class="service-mini service-php" title="Solus Web"><i class="fa-brands fa-php" style="color:#777bb4"></i><span>PHP</span></div>',
+            'api': '<div class="service-mini service-api" title="API Linux"><i class="fa-solid fa-server" style="color:var(--primary)"></i><span>API</span></div>',
+            'tiss': '<div class="service-mini service-tiss" title="WS TISS"><i class="fa-solid fa-notes-medical" style="color:var(--accent)"></i><span>TISS</span></div>',
+            'disk': '<div class="service-mini service-disk" title="GlusterFS Brick" style="background: rgba(16, 185, 129, 0.1);"><i class="fa-solid fa-hard-drive" style="color: var(--success);"></i><span>DISK</span></div>'
+        };
+
+        function switchPage(pageId, linkEl) {
+            // Update links
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            linkEl.classList.add('active');
+
+            // Update pages
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            
+            // Trigger a redraw if going back to simulation
+            if(pageId === 'sim') {
+                setTimeout(() => update(), 100);
+            }
+        }
+
+        // Init state
+        const state = { stage: 1 };
+        const svg = document.getElementById('svg-layer');
+        const stages = [
+            {
+                title: "Infraestrutura Normal",
+                desc: "Cluster operando com todos os nós ativos. O tráfego flui normalmente e os serviços estão distribuídos para máxima performance.",
+                status: "success", text: "OPERAÇÃO NORMAL",
+                setup: () => {
+                    resetNodes(); clearFlow();
+                    drawFlow(['#gateway', '#node-1 .proxy', '#node-1 .service-php', '#database']);
+                    log("Monitoramento: Todos os nós e réplicas ativos.");
+                }
+            },
+            {
+                title: "Detecção de Falha (Nó 1)",
+                desc: "O Nó 1 fica indisponível. O sistema identifica a interrupção e o Docker Swarm agenda a redistribuição das tarefas para os nós saudáveis.",
+                status: "warning", text: "NÓ 01 OFFLINE",
+                setup: () => {
+                    setNodeState('node-1', 'failed');
+                    clearFlow(); drawFlow(['#gateway', '#node-1'], 'alert');
+                    log("ALERTA: Heartbeat perdido no Nó 1. Serviços drenados.");
+                }
+            },
+            {
+                title: "Redistribuição de Carga",
+                desc: "As réplicas de PHP, API e TISS são instanciadas nos nós sobreviventes. O VIP migra o tráfego para o Nó 2, mantendo a continuidade do serviço.",
+                status: "info", text: "MIGRAÇÃO SWARM",
+                setup: () => {
+                    const node1Services = document.querySelectorAll('#node-1 .service-mini');
+                    node1Services.forEach((s, i) => {
+                        if(i % 2 === 0) animateMigration(s, 'node-2');
+                        else animateMigration(s, 'node-3');
+                    });
+
+                    setTimeout(() => {
+                        setNodeState('node-1', 'failed');
+                        setNodeState('node-2', 'master');
+                        setNodeServices('node-1', []);
+                        setNodeServices('node-2', ['proxy', 'php', 'api', 'tiss', 'php', 'api', 'disk']);
+                        setNodeServices('node-3', ['proxy', 'php', 'api', 'tiss', 'tiss', 'api', 'disk']);
+                        clearFlow(); drawFlow(['#gateway', '#node-2 .proxy', '#node-2 .service-php', '#database']);
+                    }, 800);
+                    log("Continuidade: Carga redistribuída via Swarm.");
+                }
+            },
+            {
+                title: "Colapso do Quorum",
+                desc: "Em um cenário de falha múltipla, sobrando apenas um nó ativo, o cluster perde o quorum. O storage entra em modo de proteção (Read-Only) para evitar corrupção.",
+                status: "danger", text: "QUORUM LOST",
+                setup: () => {
+                    setNodeState('node-1', 'failed');
+                    setNodeState('node-2', 'failed');
+                    setNodeState('node-3', 'master');
+                    setNodeServices('node-1', []);
+                    setNodeServices('node-2', []);
+                    setNodeServices('node-3', ['proxy', 'php', 'api', 'tiss', 'php', 'api', 'tiss', 'api', 'disk']);
+                    clearFlow(); drawFlow(['#gateway', '#node-3 .proxy', '#node-3 .service-php'], 'alert');
+                    log("CRÍTICO: Quorum perdido. Storage operando apenas como leitura.");
+                }
+            },
+            {
+                title: "Recuperação dos Nós",
+                desc: "Os servidores retornam ao cluster e o quorum é reestabelecido. Por padrão, os serviços permanecem concentrados para priorizar a estabilidade operacional (Sticky Behavior).",
+                status: "info", text: "NÓS ONLINE",
+                setup: () => {
+                    setNodeState('node-1', 'standby');
+                    setNodeState('node-2', 'standby');
+                    setNodeState('node-3', 'master');
+                    setNodeServices('node-1', ['disk']);
+                    setNodeServices('node-2', ['disk']);
+                    setNodeServices('node-3', ['proxy', 'php', 'api', 'tiss', 'proxy', 'php', 'api', 'tiss', 'proxy', 'php', 'api', 'tiss', 'disk']);
+                    clearFlow(); drawFlow(['#gateway', '#node-3 .proxy', '#node-3 .service-php', '#database']);
+                    log("Nós recuperados. Quorum ok. Cluster aguardando decisão de rebalanceamento.");
+                }
+            },
+            {
+                title: "Rebalanceamento Opcional",
+                desc: "O analista pode optar por redistribuir as réplicas de volta para o Nó 1 ou manter a configuração atual se o sistema estiver performando bem.",
+                status: "success", text: "DECISÃO TÉCNICA",
+                setup: () => {
+                    const n2Extra = Array.from(document.querySelectorAll('#node-2 .service-mini')).slice(4);
+                    const n3Extra = Array.from(document.querySelectorAll('#node-3 .service-mini')).slice(4);
+                    
+                    n2Extra.forEach(s => animateMigration(s, 'node-1'));
+                    n3Extra.forEach(s => animateMigration(s, 'node-1'));
+
+                    setTimeout(() => {
+                        resetNodes(); clearFlow();
+                        drawFlow(['#gateway', '#node-1 .proxy', '#node-1 .service-php', '#database']);
+                    }, 850);
+                    log("Ação Técnica: Rebalanceamento forçado concluído.");
+                }
+            }
+        ];
+
+        function migrateServices(fromIds, toIds) {
+            toIds.forEach(id => {
+                const el = document.getElementById(id);
+                const content = el.querySelector('.server-content');
+                if(!content.querySelector('.replica-badge')) {
+                   const badge = document.createElement('div');
+                   badge.className = 'replica-badge';
+                   badge.innerHTML = '<i class="fa-solid fa-clone"></i> HA+';
+                   content.appendChild(badge);
+                }
+            });
+        }
+
+        function log(m) {
+            const l = document.getElementById('log');
+            l.innerHTML = `<div>[${new Date().toLocaleTimeString()}] ${m}</div>` + l.innerHTML;
+        }
+
+        function setNodeServices(id, servicesList) {
+            const el = document.getElementById(id);
+            if(id === 'database') return;
+            const content = el.querySelector('.server-content');
+            content.innerHTML = '';
+            
+            // Count services by type to avoid "tower" effect
+            const counts = {};
+            servicesList.forEach(s => {
+                counts[s] = (counts[s] || 0) + 1;
+            });
+
+            // Render grouped services with discreet badges
+            Object.keys(counts).forEach(type => {
+                const count = counts[type];
+                let html = servicesTemplate[type] || '';
+                
+                if(count > 1) {
+                    const badgeHtml = `<div class="replica-badge">x${count}</div>`;
+                    // Insert badge before closing first div
+                    html = html.replace('</div>', `${badgeHtml}</div>`);
+                }
+                content.innerHTML += html;
+            });
+        }
+
+        function setNodeState(id, mode) {
+            const el = document.getElementById(id);
+            const ls = el.querySelector('.server-status');
+            
+            el.className = 'server-node glass';
+            if(mode === 'master') {
+                el.classList.add('master'); ls.textContent = 'ONLINE [MESTRE]';
+                moveVIP(el);
+            } else if(mode === 'failed') {
+                el.classList.add('failed'); ls.textContent = 'OFFLINE';
+                setNodeServices(id, []);
+            } else if(mode === 'standby') {
+                el.classList.add('standby'); ls.textContent = 'ONLINE [ESTÁVEL]';
+            } else {
+                ls.textContent = 'ONLINE [PRONTO]';
+            }
+        }
+
+        function resetNodes() {
+            setNodeState('node-1', 'master');
+            setNodeState('node-2', 'standby');
+            setNodeState('node-3', 'standby');
+            setNodeServices('node-1', ['proxy', 'php', 'api', 'tiss', 'disk']);
+            setNodeServices('node-2', ['proxy', 'php', 'api', 'tiss', 'disk']);
+            setNodeServices('node-3', ['proxy', 'php', 'api', 'tiss', 'disk']);
+        }
+
+        function moveVIP(node) {
+            const v = document.getElementById('vip-indicator');
+            if(!v) return;
+            v.style.left = `${node.offsetLeft + (node.offsetWidth/2) - (v.offsetWidth/2)}px`;
+        }
+
+        function animateMigration(el, targetNodeId) {
+            if(!el) return;
+            const targetNode = document.getElementById(targetNodeId);
+            const startRect = el.getBoundingClientRect();
+            const endRect = targetNode.getBoundingClientRect();
+            
+            const phantom = el.cloneNode(true);
+            document.body.appendChild(phantom);
+            
+            phantom.style.position = 'fixed';
+            phantom.style.top = startRect.top + 'px';
+            phantom.style.left = startRect.left + 'px';
+            phantom.style.width = startRect.width + 'px';
+            phantom.style.height = startRect.height + 'px';
+            phantom.style.zIndex = '1000';
+            phantom.style.margin = '0';
+            phantom.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            phantom.style.pointerEvents = 'none';
+            
+            el.style.opacity = '0';
+            
+            setTimeout(() => {
+                phantom.style.top = (endRect.top + 30) + 'px';
+                phantom.style.left = (endRect.left + 30) + 'px';
+                phantom.style.transform = 'scale(0.4) rotate(15deg)';
+                phantom.style.opacity = '0';
+            }, 50);
+            
+            setTimeout(() => phantom.remove(), 850);
+        }
+
+        function getPos(selector) {
+            const el = selector.startsWith('#') ? document.querySelector(selector) : document.getElementById(selector);
+            if(!el) return {x:0, y:0};
+            const rect = el.getBoundingClientRect();
+            const canvas = document.getElementById('diagram-canvas').getBoundingClientRect();
+            return { x: rect.left + rect.width/2 - canvas.left, y: rect.top + rect.height/2 - canvas.top };
+        }
+
+        function clearFlow() { svg.innerHTML = ''; }
+
+        function drawFlow(ids, type='normal') {
+            for(let i=0; i<ids.length-1; i++) {
+                const s = getPos(ids[i]); const e = getPos(ids[i+1]);
+                const p1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                p1.setAttribute('d', `M ${s.x} ${s.y} L ${e.x} ${e.y}`);
+                p1.classList.add('link-static'); svg.appendChild(p1);
+
+                const p2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                p2.setAttribute('d', `M ${s.x} ${s.y} L ${e.x} ${e.y}`);
+                p2.classList.add(type === 'alert' ? 'link-alert' : 'link-flow');
+                svg.appendChild(p2);
+            }
+        }
+
+        function update() {
+            const s = stages[state.stage - 1];
+            document.getElementById('step-title').textContent = s.title;
+            document.getElementById('step-desc').textContent = s.desc;
+            const b = document.getElementById('step-status');
+            b.textContent = s.text;
+            b.style.background = s.status === 'success' ? 'rgba(16,185,129,0.1)' : s.status === 'danger' ? 'rgba(239,68,68,0.1)' : 'rgba(245,158,11,0.1)';
+            b.style.color = `var(--${s.status})`;
+            
+            document.querySelectorAll('.p-step').forEach((st, i) => {
+               st.className = 'p-step' + (i < state.stage ? ' active' : '');
+            });
+            s.setup();
+        }
+
+        document.getElementById('btn-next').onclick = () => {
+            state.stage = (state.stage % stages.length) + 1;
+            update();
+        };
+        document.getElementById('btn-reset').onclick = () => { state.stage = 1; update(); };
+
+        window.onload = () => { update(); setTimeout(() => update(), 500); };
+        window.onresize = () => update();
+
+        // Theme
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            var body = document.getElementById('app-body');
+            body.classList.toggle('dark-mode');
+            var isDark = body.classList.contains('dark-mode');
+            this.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
+        });
+    </script>
+</body>
+</html>
+

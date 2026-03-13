@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Guia Interativo: Arquitetura HA com GlusterFS v1.2">
+    <title>Solus HA | Arquitetura GlusterFS v1.2</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+
+    <style>
+        :root {
+            --primary: #004a99;
+            --primary-glow: rgba(0, 74, 153, 0.4);
+            --secondary: #c2185b;
+            --accent: #8e24aa;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #0ea5e9;
+
+            --bg-page: #f8fafc;
+            --bg-card: rgba(255, 255, 255, 0.8);
+            --bg-sidebar: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+        }
+
+        .dark-mode {
+            --bg-page: #020617;
+            --bg-card: rgba(15, 23, 42, 0.6);
+            --bg-sidebar: #0f172a;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --glass-bg: rgba(15, 23, 42, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        * { box-sizing: border-box; transition: background-color 0.3s, color 0.3s, border-color 0.3s, transform 0.3s; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: 24px;
+        }
+
+        header {
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        nav {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            width: 100%;
+        }
+
+        .page { display: none; width: 100%; }
+        .page.active { display: block; }
+
+        .page.active.grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        /* --- DIAGRAM CORE --- */
+        .diagram-area {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            padding: 20px;
+            min-height: auto;
+        }
+
+        #svg-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        #svg-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .data-flow-line {
+            stroke-width: 3px;
+            stroke-linecap: round;
+            stroke-dasharray: 8 10;
+            animation: flow-animation 15s linear infinite;
+            fill: none;
+        }
+        .data-flow-line.write { stroke: #ec4899; }
+        .data-flow-line.read { stroke: #10b981; }
+        .data-flow-line.heal { stroke: #3b82f6; }
+        @keyframes flow-animation { to { stroke-dashoffset: -1000; } }
+
+        /* --- NODES & COMPONENTS --- */
+        .shared-volume {
+            width: 280px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 2px solid #22c55e;
+            padding: 12px;
+            border-radius: 16px;
+            text-align: center;
+            font-weight: 800;
+            color: #15803d;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nodes-container {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .node {
+            flex: 1;
+            max-width: 210px;
+            background: var(--bg-sidebar);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            position: relative;
+            box-shadow: var(--shadow);
+            z-index: 10;
+        }
+
+        .node.failed { border-color: var(--danger); background: rgba(239, 68, 68, 0.05); }
+        .node-title { font-weight: 800; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .docker-area {
+            width: 100%;
+            height: 100px;
+            background: rgba(14, 165, 233, 0.05);
+            border: 2px dashed rgba(14, 165, 233, 0.3);
+            border-radius: 14px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .docker-replica {
+            width: 42px; height: 42px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .replica-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: 800;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 20;
+            border: 1.5px solid white;
+        }
+
+        .gluster-brick {
+            width: 100%;
+            background: rgba(236, 72, 153, 0.05);
+            border: 2px dashed rgba(236, 72, 153, 0.3);
+            padding: 15px;
+            border-radius: 16px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #be185d;
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .gluster-brick.offline { opacity: 0.4; filter: grayscale(1); }
+        .gluster-brick.healing { background: rgba(59, 130, 246, 0.1); color: var(--info); border-color: var(--info); }
+
+        .sync-bar-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+            display: none;
+        }
+        .sync-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--success);
+            transition: width 2s ease-in-out;
+        }
+        .sync-text {
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: var(--success);
+            margin-top: 2px;
+            display: none;
+            text-transform: uppercase;
+        }
+
+        .data-file {
+            font-size: 1.6rem;
+            color: var(--primary);
+            position: absolute;
+            left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 30;
+            opacity: 0.6 !important;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            pointer-events: none;
+        }
+
+        /* --- SIDEBAR & CONTROLS --- */
+        .sidebar { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 1.25rem; 
+            position: sticky;
+            top: 10px;
+            height: fit-content;
+        }
+        .card { padding: 1.25rem; border-radius: 20px; }
+
+        .explanation-box {
+            padding: 1.5rem;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            border-left: 4px solid var(--secondary);
+            background: rgba(194, 24, 91, 0.05);
+            min-height: 120px;
+        }
+
+        .explanation-box.success-state { border-color: var(--success); background: rgba(16, 185, 129, 0.05); }
+        .explanation-box.warning-state { border-color: var(--warning); background: rgba(245, 158, 11, 0.05); }
+        .explanation-box.danger-state { border-color: var(--danger); background: rgba(239, 68, 68, 0.05); }
+        .explanation-box.quorum-lost { border: 2px solid var(--danger); background: rgba(239, 68, 68, 0.1); animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+
+        .rebalance-indicator {
+            position: absolute;
+            bottom: -30px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--warning);
+            display: none;
+            background: rgba(245, 158, 11, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--warning);
+        }
+
+        .btn {
+            width: 100%; padding: 0.75rem; border-radius: 10px; border: none; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .btn:hover:not(:disabled) { transform: translateY(-2px); opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--secondary), var(--accent)); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(194, 24, 91, 0.3); 
+        }
+        .btn-secondary { background: var(--bg-sidebar); border: 1px solid var(--border); color: var(--text-main); }
+
+        .progress-bar { width: 100%; height: 6px; background: rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; margin-top: 8px; }
+        .progress-bar-fill { width: 0%; height: 100%; background: var(--primary); transition: width 2.5s ease-in-out; }
+
+        .theme-btn { background: none; border: 1px solid var(--border); border-radius: 10px; padding: 8px; cursor: pointer; color: var(--text-main); }
+
+        /* --- DOC CONTENT --- */
+        .doc-content { padding: 1.5rem; max-width: 900px; margin: 0 auto; line-height: 1.6; }
+        .doc-section { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+        .doc-section h2 { color: var(--primary); display: flex; align-items: center; gap: 10px; font-size: 1.8rem; }
+        .doc-section h3 { font-size: 1.3rem; margin-top: 2rem; color: var(--text-main); }
+        .tech-pill { display: inline-block; padding: 2px 10px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 6px; font-size: 0.75rem; font-weight: 700; margin-right: 5px; }
+
+        .code-block {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            margin: 1rem 0;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+
+        /* Accordion */
+        .accordion-item { border: 1px solid var(--border); border-radius: 16px; margin-bottom: 1rem; overflow: hidden; background: var(--bg-sidebar); }
+        .accordion-header { padding: 1.2rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 700; background: var(--bg-card); }
+        .accordion-content { padding: 0; max-height: 0; overflow: hidden; transition: all 0.3s ease; }
+        .accordion-item.active .accordion-content { padding: 1.5rem; max-height: 2000px; border-top: 1px solid var(--border); }
+        .accordion-item.active .fa-chevron-down { transform: rotate(180deg); }
+
+    </style>
+</head>
+<body id="app-body">
+    <header>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="logo-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="location.reload()">
+                <svg width="210" height="40" viewBox="0 8 280 40" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+                  <path d="M 10 15 L 15 15 L 15 33 L 10 33 A 9 9 0 0 1 10 15 Z" fill="#0157c8" />
+                  <path d="M 33 15 L 38 15 A 9 9 0 0 1 38 33 L 33 33 Z" fill="#e11c5f" />
+                  <path d="M 15 10 A 9 9 0 0 1 33 10 L 33 15 L 15 15 Z" fill="#e11c5f" />
+                  <path d="M 15 33 L 33 33 L 33 38 A 9 9 0 0 1 15 38 Z" fill="#00439c" />
+                  <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
+                  <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
+                  <text x="50" y="34" font-family="'Outfit', 'Arial', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
+                  <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
+                </svg>
+            </div>
+            <nav style="margin-left: 20px;">
+                <a href="#" class="nav-link active" onclick="switchPage('sim', this)">Simulador</a>
+                <a href="#" class="nav-link" onclick="switchPage('guia', this)">Guia de Instalação</a>
+                <a href="#" class="nav-link" onclick="switchPage('req', this)">Requisitos</a>
+                <a href="#" class="nav-link" onclick="switchPage('doc', this)">Documentação</a>
+            </nav>
+        </div>
+        <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
+    </header>
+
+    <main class="main-container">
+        <!-- Dashboard Simulation -->
+        <div class="page active grid-layout" id="page-sim">
+            <div class="diagram-area glass" id="diagram">
+                <svg id="svg-layer"></svg>
+                <svg id="svg-canvas" style="position: absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1;"></svg>
+
+                <div class="shared-volume" id="shared-volume">
+                    <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: var(--success);"></i>
+                    <span>GlusterFS Volume (/docker)</span>
+                    <div class="data-file" id="shared-file" style="opacity: 0;"><i class="fa-solid fa-file-shield"></i></div>
+                </div>
+
+                <div class="nodes-container">
+                    <div class="node" id="node1">
+                        <div class="node-title">Nó 01 (MASTER)</div>
+                        <div class="docker-area" id="docker-area-1">
+                            <span style="font-size: 0.6rem; color: var(--text-muted); position: absolute; top: 5px;">DOCKER SWARM</span>
+                            <div class="rebalance-indicator" id="balance-1">SOBRECARREGADO</div>
+                        </div>
+                        <div class="gluster-brick" id="brick1">
+                            <i class="fa-solid fa-hard-drive"></i>
+                            BRICK 01
+                            <div class="data-file" id="brick-file-1" style="opacity: 0;"><i class="fa-solid fa-file-shield"></i></div>
+                            <div class="sync-bar-container"><div class="sync-bar-fill"></div></div>
+                            <div class="sync-text">Sincronizando...</div>
+                        </div>
+                    </div>
+                    <div class="node" id="node2">
+                        <div class="node-title">Nó 02 (BACKUP)</div>
+                        <div class="docker-area" id="docker-area-2">
+                            <span style="font-size: 0.6rem; color: var(--text-muted); position: absolute; top: 5px;">DOCKER SWARM</span>
+                            <div class="rebalance-indicator" id="balance-2">OCIOSO</div>
+                        </div>
+                        <div class="gluster-brick" id="brick2">
+                            <i class="fa-solid fa-hard-drive"></i>
+                            BRICK 02
+                            <div class="data-file" id="brick-file-2" style="opacity: 0;"><i class="fa-solid fa-file-shield"></i></div>
+                            <div class="sync-bar-container"><div class="sync-bar-fill"></div></div>
+                            <div class="sync-text">Sincronizando...</div>
+                        </div>
+                    </div>
+                    <div class="node" id="node3">
+                        <div class="node-title">Nó 03 (BACKUP)</div>
+                        <div class="docker-area" id="docker-area-3">
+                            <span style="font-size: 0.6rem; color: var(--text-muted); position: absolute; top: 5px;">DOCKER SWARM</span>
+                            <div class="rebalance-indicator" id="balance-3">OCIOSO</div>
+                        </div>
+                        <div class="gluster-brick" id="brick3">
+                            <i class="fa-solid fa-hard-drive"></i>
+                            BRICK 03
+                            <div class="data-file" id="brick-file-3" style="opacity: 0;"><i class="fa-solid fa-file-shield"></i></div>
+                            <div class="sync-bar-container"><div class="sync-bar-fill"></div></div>
+                            <div class="sync-text">Sincronizando...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <aside class="sidebar">
+                <div class="card glass">
+                    <h3 style="margin: 0 0 10px; font-size: 1.1rem;">Monitor de Replicação</h3>
+                    <div id="explanation" class="explanation-box info-state">
+                        <strong>Cluster Inicializado:</strong> O ambiente está pronto para operação. Use o botão abaixo para iniciar o fluxo de replicação de dados.
+                    </div>
+                    <div class="controls">
+                        <button class="btn btn-primary" id="btn-next">INICIAR SIMULAÇÃO</button>
+                        <button class="btn btn-secondary" id="btn-rebalance" style="display: none; background: var(--success); color: white; border: none;">REBALANCEAR</button>
+                        <button class="btn btn-secondary" id="btn-reset">RESETAR</button>
+                    </div>
+                </div>
+
+                <div class="card glass">
+                    <h4 style="margin: 0 0 10px; font-size: 0.75rem; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 5px;">FLUXO DE DADOS</h4>
+                    <div style="font-size: 0.75rem; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #ec4899; border-radius: 4px;"></div> Escrita Síncrona</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #10b981; border-radius: 4px;"></div> Leitura de Volume</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 4px;"></div> Healing (Auto-Reaparação)</div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Implementation Guide Page -->
+    <div class="page" id="page-guia">
+        <div class="doc-content">
+            <div class="doc-section">
+                <h2><i class="fa-solid fa-book-bookmark"></i> Roteiro de Implementação Passo a Passo</h2>
+                <p>Guia técnico consolidado para o deploy de uma infraestrutura HA com replicação tripla de armazenamento usando GlusterFS.</p>
+            </div>
+
+            <div class="accordion-container">
+                <!-- Fase 1 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Fase 1: Preparação da Infraestrutura Base
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Instale os pacotes essenciais em todos os três nós para garantir que a pilha de software esteja sincronizada.</p>
+                        <div class="code-block">
+                            <button class="copy-btn">Copiar</button>
+                            <pre><code># Executar em todos os nós
+sudo apt update
+sudo apt install keepalived glusterfs-server -y
+curl -fsSL https://get.docker.com | bash</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fase 2 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Fase 2: Camada de Armazenamento (GlusterFS)
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <h4 class="font-semibold mb-2">1. Formação do Cluster e Peer Probe</h4>
+                        <div class="code-block">
+                            <pre><code># Em todos os nós:
+sudo systemctl enable --now glusterd
+
+# Apenas no Nó 1:
+sudo gluster peer probe [IP_DO_NO_2]
+sudo gluster peer probe [IP_DO_NO_3]</code></pre>
+                        </div>
+                        <h4 class="font-semibold mb-2 mt-4">2. Criação do Volume Replicado</h4>
+                        <div class="code-block">
+                            <pre><code># Apenas no Nó 1:
+sudo mkdir -p /data/brick1/docker
+sudo gluster volume create docker-volume replica 3 transport tcp \
+  [IP_NO1]:/data/brick1/docker \
+  [IP_NO2]:/data/brick1/docker \
+  [IP_NO3]:/data/brick1/docker \
+  force
+sudo gluster volume start docker-volume</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fase 3 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Fase 3: Orquestração (Docker Swarm)
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Inicialize o swarm e garanta que os volumes GlusterFS estejam montados no caminho onde o Docker persistirá os dados dos serviços.</p>
+                        <div class="code-block">
+                            <pre><code># No MASTER:
+docker swarm init --advertise-addr [IP_MASTER]
+
+# Nos BACKUPS (usando o token gerado):
+docker swarm join --token [TOKEN_SWARM] [IP_MASTER]:2377</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fase 4 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Fase 4: Alta Disponibilidade de Rede (VIP)
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Configuração do <strong>Keepalived</strong> para gerenciar o IP Flutuante (VIP).</p>
+                        <div class="code-block">
+                            <pre><code># /etc/keepalived/keepalived.conf (Exemplo MASTER)
+vrrp_instance VI_1 {
+    state MASTER
+    interface eth0
+    virtual_router_id 51
+    priority 101
+    virtual_ipaddress {
+        192.168.1.100/24
+    }
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fase 5 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Fase 5: Deploy e NAT
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>No seu firewall de borda, crie uma regra NAT que redirecione o tráfego do seu IP público (portas 80, 443) para o VIP interno do cluster.</p>
+                        <div class="code-block">
+                            <pre><code># Direcionar tráfego externo para o VIP (192.168.1.100)
+# Copiar dados para o novo volume montado
+sudo cp -rp /pasta/antiga/* /docker/</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fase 6 -->
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Fase 6: Validação de Alta Disponibilidade
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <ul class="list-disc list-inside space-y-2">
+                            <li><strong>Teste de Rede:</strong> Pare o keepalived no Master e veja o VIP migrar.</li>
+                            <li><strong>Teste de Arquivos:</strong> Crie um arquivo em um nó e veja-o em todos os outros via GlusterFS.</li>
+                            <li><strong>Teste de Swarm:</strong> Desligue um nó e veja o Docker reiniciar as réplicas nos nós ativos.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Requirements Page -->
+    <div class="page" id="page-req">
+        <div class="doc-content">
+            <div class="doc-section">
+                <h2><i class="fa-solid fa-microchip"></i> Requisitos de Hardware (Por Nó)</h2>
+                <p>Configurações recomendadas para um ambiente GlusterFS triplo operando com Docker Swarm.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                <!-- S.O -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--primary); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-brands fa-linux" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: var(--primary);">Sistema Operacional</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">Debian 12 ou Ubuntu 22.04 LTS</p>
+                        <span class="tech-pill">Estável</span> <span class="tech-pill">LTS</span>
+                    </div>
+                </div>
+
+                <!-- Processamento -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--secondary); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-solid fa-microchip" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: var(--secondary);">Processamento</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">2 vCPUs por nó</p>
+                        <span class="tech-pill">Mínimo Sugerido</span>
+                    </div>
+                </div>
+
+                <!-- Memoria -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--info); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-solid fa-memory" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: var(--info);">Memória RAM</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">8 GB de RAM</p>
+                        <span class="tech-pill">DDR4/DDR5</span>
+                    </div>
+                </div>
+
+                <!-- Disco SO -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--accent); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-solid fa-hard-drive" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: var(--accent);">Disco (S.O)</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">50 GB SSD/NVMe</p>
+                        <span class="tech-pill">Partição Raiz</span>
+                    </div>
+                </div>
+
+                <!-- Disco Dados -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--success); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-solid fa-database" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color: var(--success);">Disco de Dados (LVM)</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">300 GB (Expansível)</p>
+                        <span class="tech-pill">Formato LVM</span> <span class="tech-pill">Replicado</span>
+                    </div>
+                </div>
+
+                <!-- Privilégios (Sudo) -->
+                <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
+                    <div style="background: var(--warning); color: white; padding: 12px; border-radius: 12px;">
+                        <i class="fa-solid fa-user-shield" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div style="min-width: 0;">
+                        <h4 style="margin: 0; color: var(--warning);">Privilégios</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Usuário com poderes administrativos</p>
+                        <span class="tech-pill">Sudo</span> <span class="tech-pill">Root</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- Technical Documentation Page -->
+    <div class="page" id="page-doc">
+        <div class="doc-content">
+            <div class="doc-section">
+                <h2><i class="fa-solid fa-shield-halved"></i> Documentação: Fundamentos da Alta Disponibilidade</h2>
+                <p>Este apêndice detalha as decisões de arquitetura e o funcionamento técnico das tecnologias apresentadas no simulador.</p>
+                <div style="margin-top: 15px; padding: 15px; background: rgba(99, 102, 241, 0.05); border-radius: 12px; border-left: 4px solid var(--primary);">
+                    <strong>Objetivo:</strong> Garantir que o ambiente Solus opere com tolerância a falhas tanto no processamento (Docker) quanto no armazenamento (GlusterFS).
+                </div>
+            </div>
+
+            <div class="doc-section">
+                <h3>1. Orquestração com Docker Swarm</h3>
+                <p>O Swarm gerencia o ciclo de vida dos containers. Sua principal função nesta arquitetura é o <strong>Self-Healing de Serviços</strong>.</p>
+                <ul>
+                    <li><strong>Estado Desejado:</strong> Se configuramos 3 réplicas, o Swarm monitora constantemente. Se uma cai, ele reinstancia em outro nó.</li>
+                    <li><strong>Rebalanceamento:</strong> Por design, o Swarm não move containers de volta automaticamente quando um nó recupera (para evitar instabilidade). O comando <code>--force update</code> é usado manualmente pelo administrador para redistribuir a carga.</li>
+                </ul>
+            </div>
+
+            <div class="doc-section">
+                <h3>2. Armazenamento com GlusterFS</h3>
+                <p>O GlusterFS elimina o ponto único de falha do storage tradicional (NAS/SAN).</p>
+                <ul>
+                    <li><strong>Replicação Tripla:</strong> Cada bit de dado escrito no volume <code>/docker</code> é replicado síncronamente em todos os 3 nós.</li>
+                    <li><strong>Quorum:</strong> O sistema exige que a maioria dos nós (50% + 1) esteja online para aceitar escritas. Com 3 nós, o quorum é 2. Se sobrar apenas 1 nó, o volume entra em "modo de segurança" para evitar o <em>Split-Brain</em>.</li>
+                </ul>
+            </div>
+
+            <div class="doc-section">
+                <h3>3. Matriz de Operação (Auto vs. Manual)</h3>
+                <style>
+                    .tech-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+                    .tech-table th, .tech-table td { border: 1px solid var(--border); padding: 12px; text-align: left; }
+                    .tech-table th { background: rgba(99, 102, 241, 0.05); color: var(--primary); }
+                    .tag-auto { color: var(--success); font-weight: 700; }
+                    .tag-manual { color: var(--accent); font-weight: 700; }
+                </style>
+                <table class="tech-table">
+                    <thead>
+                        <tr>
+                            <th>Recurso / Cenário</th>
+                            <th>Tipo</th>
+                            <th>Comportamento Esperado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Detecção de Falha de Nó</td>
+                            <td><span class="tag-auto">AUTOMÁTICO</span></td>
+                            <td>Swarm detecta e reinicia containers em nós saudáveis em segundos.</td>
+                        </tr>
+                        <tr>
+                            <td>Sincronismo de Dados</td>
+                            <td><span class="tag-auto">AUTOMÁTICO</span></td>
+                            <td>Escrita síncrona em todos os Bricks ativos via rede.</td>
+                        </tr>
+                        <tr>
+                            <td>Self-Healing (GlusterFS)</td>
+                            <td><span class="tag-auto">AUTOMÁTICO</span></td>
+                            <td>Ao voltar, o nó sincroniza dados defasados automaticamente.</td>
+                        </tr>
+                        <tr>
+                            <td>Rebalanceamento de Carga</td>
+                            <td><span class="tag-manual">MANUAL</span></td>
+                            <td>Redistribuição de containers após recuperação do cluster (Decisão Técnica).</td>
+                        </tr>
+                        <tr>
+                            <td>Expansão de Disco</td>
+                            <td><span class="tag-manual">MANUAL</span></td>
+                            <td>Ajuste de LVM e Bricks para aumentar a capacidade do volume.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer style="text-align: center; padding: 1.5rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 0.8rem; background: var(--bg-sidebar);">
+        Elaborado por: <strong>Paulo Ricardo Borges</strong> - Analista de Infraestrutura
+    </footer>
+
+
+    <script>
+        // --- THEME PERSISTENCE ---
+        (function() {
+            if (localStorage.getItem('solus-theme') === 'dark') {
+                document.getElementById('app-body').classList.add('dark-mode');
+                var btn = document.getElementById('theme-toggle');
+                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        })();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const svgCanvas = document.getElementById('svg-canvas');
+            const dockerAreas = [document.getElementById('docker-area-1'), document.getElementById('docker-area-2'), document.getElementById('docker-area-3')];
+            const bricks = [document.getElementById('brick1'), document.getElementById('brick2'), document.getElementById('brick3')];
+            const brickFiles = [document.getElementById('brick-file-1'), document.getElementById('brick-file-2'), document.getElementById('brick-file-3')];
+            const sharedFile = document.getElementById('shared-file');
+            const sharedVolume = document.getElementById('shared-volume');
+            const btnNext = document.getElementById('btn-next');
+            const btnReset = document.getElementById('btn-reset');
+            const explanation = document.getElementById('explanation');
+
+            let currentStage = 0;
+            let replicas = [];
+            let currentFlowLines = [];
+
+            // Navigation
+            window.switchPage = (pageId, linkEl) => {
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                linkEl.classList.add('active');
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                document.getElementById('page-' + pageId).classList.add('active');
+            };
+
+            // Accordion Logic
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const item = header.parentElement;
+                    const isActive = item.classList.contains('active');
+                    document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('active'));
+                    if (!isActive) item.classList.add('active');
+                });
+            });
+
+            // Utils
+            function getCoords(element) {
+                const originRect = svgCanvas.getBoundingClientRect();
+                const elemRect = element.getBoundingClientRect();
+                return { x: elemRect.left + elemRect.width / 2 - originRect.left, y: elemRect.top + elemRect.height / 2 - originRect.top };
+            }
+
+            function drawLine(startEl, endEl, type) {
+                const start = getCoords(startEl);
+                const end = getCoords(endEl);
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', start.x); line.setAttribute('y1', start.y);
+                line.setAttribute('x2', end.x); line.setAttribute('y2', end.y);
+                line.setAttribute('class', `data-flow-line ${type}`);
+                svgCanvas.appendChild(line);
+                currentFlowLines.push(line);
+            }
+
+            function clearLines() {
+                currentFlowLines.forEach(l => l.remove());
+                currentFlowLines = [];
+            }
+
+            function syncBricks(show = true) {
+                document.querySelectorAll('.sync-bar-container').forEach(c => c.style.display = show ? 'block' : 'none');
+                document.querySelectorAll('.sync-text').forEach(t => t.style.display = show ? 'block' : 'none');
+                
+                if(show) {
+                    setTimeout(() => {
+                        document.querySelectorAll('.sync-bar-fill').forEach(f => f.style.width = '100%');
+                    }, 50);
+                } else {
+                    document.querySelectorAll('.sync-bar-fill').forEach(f => {
+                        f.style.transition = 'none';
+                        f.style.width = '0%';
+                        setTimeout(() => f.style.transition = 'width 2s ease-in-out', 50);
+                    });
+                }
+            }
+
+            function addReplica(nodeIdx) {
+                const area = dockerAreas[nodeIdx];
+                // Check if a replica already exists to group them
+                let replica = area.querySelector('.docker-replica');
+                
+                if (replica) {
+                    let count = parseInt(replica.dataset.count || 1) + 1;
+                    replica.dataset.count = count;
+                    let badge = replica.querySelector('.replica-badge');
+                    if (!badge) {
+                        badge = document.createElement('div');
+                        badge.className = 'replica-badge';
+                        replica.appendChild(badge);
+                    }
+                    badge.textContent = `x${count}`;
+                    return replica;
+                }
+
+                replica = document.createElement('div');
+                replica.className = 'docker-replica';
+                replica.innerHTML = '<i class="devicon-docker-plain"></i>';
+                replica.dataset.node = nodeIdx;
+                replica.dataset.count = 1;
+                area.appendChild(replica);
+                setTimeout(() => replica.style.transform = 'scale(1)', 50);
+                replicas.push(replica);
+                return replica;
+            }
+
+            async function advance() {
+                currentStage++;
+                clearLines();
+
+                switch(currentStage) {
+                    case 1:
+                        btnNext.disabled = true;
+                        addReplica(0); addReplica(1); addReplica(2);
+                        explanation.innerHTML = '<strong>PASSO 1: DISTRIBUIÇÃO SWARM.</strong> As réplicas (1 por nó) estão operando em estado ideal (High Availability).';
+                        explanation.className = 'explanation-box info-state';
+                        btnNext.textContent = 'SIMULAR ESCRITA';
+                        setTimeout(() => btnNext.disabled = false, 1000);
+                        break;
+                    case 2:
+                        replicas.forEach(r => drawLine(r, sharedVolume, 'write'));
+                        sharedFile.style.opacity = '1';
+                        explanation.innerHTML = '<strong>PASSO 2: ESCRITA NO VOLUME.</strong> As réplicas escrevem no diretório montado (/docker). O GlusterFS intercepta a chamada.';
+                        btnNext.textContent = 'REPLICAR NOS BRICKS';
+                        break;
+                    case 3:
+                        bricks.forEach(b => drawLine(sharedVolume, b, 'write'));
+                        syncBricks(true);
+                        setTimeout(() => {
+                            brickFiles.forEach(f => f.style.opacity = '1');
+                            syncBricks(false);
+                        }, 2000);
+                        explanation.innerHTML = '<strong>PASSO 3: REPLICAÇÃO SÍNCRONA.</strong> O arquivo é gravado simultaneamente nos bricks locais de cada servidor. Redundância Tripla confirmada.';
+                        explanation.className = 'explanation-box success-state';
+                        btnNext.textContent = 'SIMULAR FALHA DO NÓ 2';
+                        break;
+                    case 4:
+                        // Node 2 fails
+                        btnNext.disabled = true;
+                        const res2 = replicas.find(r => r.dataset.node == 1);
+                        animateMigration(res2, 0); // Migrate to Node 1
+                        
+                        document.getElementById('node2').classList.add('failed');
+                        bricks[1].classList.add('offline');
+                        brickFiles[1].style.opacity = '0';
+                        
+                        replicas = replicas.filter(r => r !== res2);
+                        explanation.innerHTML = '<strong>PASSO 4: FALHA DO NÓ 2.</strong> O Docker Swarm detectou a queda e moveu <strong>graficamente</strong> a instância para o Nó 1. <strong>Estado: 2-0-1.</strong>';
+                        explanation.className = 'explanation-box warning-state';
+                        btnNext.textContent = 'SIMULAR FALHA DO NÓ 3 (PERDA DE QUORUM)';
+                        setTimeout(() => btnNext.disabled = false, 1500);
+                        break;
+
+                    case 5:
+                        // Node 3 fails - QUORUM LOST
+                        btnNext.disabled = true;
+                        const res3 = replicas.find(r => r.dataset.node == 2);
+                        animateMigration(res3, 0); // Migrate to Node 1
+                        
+                        document.getElementById('node3').classList.add('failed');
+                        bricks[2].classList.add('offline');
+                        brickFiles[2].style.opacity = '0';
+                        
+                        replicas = replicas.filter(r => r !== res3);
+                        
+                        sharedFile.style.opacity = '0';
+                        sharedVolume.style.borderColor = "var(--danger)";
+                        sharedVolume.style.background = "rgba(239, 68, 68, 0.1)";
+                        sharedVolume.style.color = "var(--danger)";
+
+                        explanation.innerHTML = '<strong>PASSO 5: PERDA DE QUORUM (1/3).</strong> O Nó 3 caiu. Todas as instâncias estão no Nó 1. GlusterFS bloqueia escritas por segurança.';
+                        explanation.className = 'explanation-box quorum-lost';
+                        btnNext.textContent = 'RECUPERAR NÓS';
+                        setTimeout(() => btnNext.disabled = false, 1500);
+                        break;
+
+                    case 6:
+                        // Recover nodes 2 and 3
+                        document.getElementById('node2').classList.remove('failed');
+                        document.getElementById('node3').classList.remove('failed');
+                        bricks[1].classList.remove('offline');
+                        bricks[2].classList.remove('offline');
+                        
+                        bricks[1].classList.add('healing');
+                        bricks[2].classList.add('healing');
+                        drawLine(bricks[0], bricks[1], 'heal');
+                        drawLine(bricks[0], bricks[2], 'heal');
+                        syncBricks(true);
+                        
+                        setTimeout(() => {
+                            bricks[1].classList.remove('healing');
+                            bricks[2].classList.remove('healing');
+                            brickFiles[1].style.opacity = '1';
+                            brickFiles[2].style.opacity = '1';
+                            sharedFile.style.opacity = '1';
+                            sharedVolume.style.borderColor = "#22c55e";
+                            sharedVolume.style.background = "rgba(34, 197, 94, 0.1)";
+                            sharedVolume.style.color = "#15803d";
+                            syncBricks(false);
+                            clearLines();
+                        }, 2000);
+
+                        explanation.innerHTML = '<strong>PASSO 6: RECUPERAÇÃO.</strong> Os nós voltaram, mas as instâncias <strong>permanecem concentradas no Nó 1</strong>. Veja os alertas de OCIOSO.';
+                        explanation.className = 'explanation-box warning-state';
+                        
+                        document.getElementById('balance-1').style.display = 'block';
+                        document.getElementById('balance-2').style.display = 'block';
+                        document.getElementById('balance-3').style.display = 'block';
+                        
+                        btnNext.style.display = 'none';
+                        document.getElementById('btn-rebalance').style.display = 'flex';
+                        break;
+
+                    case 7:
+                        // Manual Rebalance back to 1-1-1
+                        explanation.innerHTML = '<strong>PASSO 7: REBALANCEAMENTO MANUAL.</strong> Executando `update --force`. O Swarm redistribui instâncias para que haja <strong>exatamente uma em cada nó</strong>.';
+                        explanation.className = 'explanation-box info-state';
+                        
+                        // Find the grouped replica on node 0
+                        const node0Rep = replicas.find(r => r.dataset.node == 0);
+                        
+                        if(node0Rep && parseInt(node0Rep.dataset.count) >= 3) {
+                            // Decrease count to 1 on node 0
+                            node0Rep.dataset.count = 1;
+                            const badge = node0Rep.querySelector('.replica-badge');
+                            if(badge) badge.remove();
+                            
+                            // Migrate "ghosts" to other nodes
+                            animateMigration(node0Rep, 1, true);
+                            animateMigration(node0Rep, 2, true);
+                        }
+                        
+                        document.getElementById('btn-rebalance').disabled = true;
+                        
+                        setTimeout(() => {
+                            document.getElementById('balance-1').style.display = 'none';
+                            document.getElementById('balance-2').style.display = 'none';
+                            document.getElementById('balance-3').style.display = 'none';
+                            document.getElementById('btn-rebalance').style.display = 'none';
+                            btnNext.style.display = 'flex';
+                            btnNext.textContent = 'SIMULAÇÃO CONCLUÍDA';
+                            btnNext.disabled = true;
+                            explanation.innerHTML = '<strong>ALTA DISPONIBILIDADE RESTAURADA.</strong> Cluster balanceado (1-1-1) e dados sincronizados. Ambiente 100% operacional.';
+                            explanation.className = 'explanation-box success-state';
+                        }, 2000);
+                        break;
+                }
+            }
+
+            function animateMigration(replicaEl, targetNodeIdx, isPartial = false) {
+                if(!replicaEl) return;
+                const startPos = replicaEl.getBoundingClientRect();
+                const endArea = dockerAreas[targetNodeIdx].getBoundingClientRect();
+                
+                const phantom = replicaEl.cloneNode(true);
+                // Remove badge from phantom for partial movement
+                const b = phantom.querySelector('.replica-badge');
+                if(b) b.remove();
+
+                document.body.appendChild(phantom);
+                phantom.style.position = 'fixed';
+                phantom.style.top = startPos.top + 'px';
+                phantom.style.left = startPos.left + 'px';
+                phantom.style.zIndex = "1000";
+                phantom.style.transition = "all 1s cubic-bezier(0.68, -0.55, 0.27, 1.55)";
+                
+                if(!isPartial) replicaEl.style.opacity = '0';
+                
+                setTimeout(() => {
+                    phantom.style.top = endArea.top + (endArea.height / 2) - 21 + 'px';
+                    phantom.style.left = endArea.left + (endArea.width / 2) - 21 + 'px';
+                    phantom.style.boxShadow = "0 0 30px var(--primary)";
+                }, 50);
+
+                setTimeout(() => {
+                    phantom.style.transform = 'scale(0.5)';
+                    phantom.style.opacity = '0';
+                    addReplica(targetNodeIdx);
+                    setTimeout(() => {
+                        phantom.remove();
+                        if(!isPartial) replicaEl.remove();
+                    }, 500);
+                }, 1050);
+            }
+
+            function rebalance() {
+                currentStage = 6; // Set to 6 so advance() goes to 7
+                advance();
+            }
+
+
+            btnNext.addEventListener('click', advance);
+            document.getElementById('btn-rebalance').addEventListener('click', rebalance);
+            btnReset.addEventListener('click', () => location.reload());
+
+            // Theme Toggle
+            const themeBtn = document.getElementById('theme-toggle');
+            themeBtn.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                const isDark = document.body.classList.contains('dark-mode');
+                themeBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
+            });
+        });
+    </script>
+</body>
+</html>
+

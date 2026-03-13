@@ -1,0 +1,941 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Solus Saúde HA - Treinamento, Simulação e Avaliação Unificada">
+    <title>Solus HA | Ecossistema de Engenharia v2.0</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+
+    <style>
+        :root {
+            --primary: #004a99;
+            --primary-glow: rgba(0, 74, 153, 0.4);
+            --secondary: #c2185b;
+            --accent: #8e24aa;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #0ea5e9;
+
+            --bg-page: #f8fafc;
+            --bg-card: rgba(255, 255, 255, 0.82);
+            --bg-sidebar: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+        }
+
+        .dark-mode {
+            --bg-page: #020617;
+            --bg-card: rgba(15, 23, 42, 0.65);
+            --bg-sidebar: #0f172a;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        * { box-sizing: border-box; transition: background-color 0.3s, color 0.3s, border-color 0.3s, transform 0.3s; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            border-radius: 28px;
+        }
+
+        header {
+            padding: 0.8rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 2000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        nav {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            background: rgba(0,0,0,0.03);
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .nav-link.active {
+            color: var(--primary);
+            background: var(--bg-sidebar);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            width: 100%;
+        }
+
+        .page { display: none; width: 100%; }
+        .page.active { display: block; animation: fadeIn 0.4s ease-out; }
+
+        .page.active.grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- DIAGRAM CORE --- */
+        .simulation-canvas {
+            position: relative;
+            padding: 2rem;
+            min-height: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            overflow: hidden;
+        }
+
+        .svg-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* --- NODES & COMPONENTS (Standardized) --- */
+        .node {
+            width: 200px;
+            background: var(--bg-sidebar);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 1rem;
+            position: relative;
+            z-index: 10;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: none;
+        }
+
+        .node-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .node-status {
+            font-size: 9px;
+            font-weight: 800;
+            text-align: center;
+            padding: 5px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.05);
+        }
+
+        .node.failed { opacity: 0.5; filter: grayscale(1); border-style: dashed; border-color: var(--danger); }
+        .node.failed .node-status { background: var(--danger); color: white; }
+        .node.master { border-color: var(--success); box-shadow: 0 0 25px rgba(16, 185, 129, 0.15); }
+        .node.master .node-status { background: var(--success); color: white; }
+
+        .service-box {
+            background: rgba(0,0,0,0.03);
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .service-box.storage { background: rgba(236, 72, 153, 0.05); border-color: rgba(236, 72, 153, 0.2); color: #be185d; }
+        .service-box.compute { background: rgba(14, 165, 233, 0.05); border-color: rgba(14, 165, 233, 0.2); color: var(--secondary); }
+
+        .data-file {
+            position: absolute;
+            font-size: 1.5rem;
+            color: var(--primary);
+            opacity: 0.6;
+            z-index: 30;
+            pointer-events: none;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        /* --- ARROWS & FLOWS --- */
+        .link-flow { stroke-width: 3; fill: none; stroke-dasharray: 8, 5; animation: flowDash 1s linear infinite; }
+        .link-flow.primary { stroke: var(--primary); }
+        .link-flow.danger { stroke: var(--danger); animation-duration: 0.5s; }
+        .link-flow.success { stroke: var(--success); }
+        .link-flow.storage { stroke: #ec4899; }
+
+        @keyframes flowDash { from { stroke-dashoffset: 26; } to { stroke-dashoffset: 0; } }
+
+        /* --- SIDEBAR PANEL --- */
+        .control-panel { display: flex; flex-direction: column; gap: 1rem; position: sticky; top: 10px; }
+        .explanation-box {
+            padding: 1rem;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            border-left: 5px solid var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+            min-height: 100px;
+        }
+        .explanation-box h4 { margin: 0 0 8px; font-weight: 800; color: var(--text-main); }
+        
+        .btn {
+            width: 100%; padding: 0.9rem; border-radius: 14px; border: none; font-weight: 700; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px;
+            transition: all 0.2s;
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--secondary), var(--accent)); 
+            color: white; 
+            box-shadow: 0 4px 15px rgba(194, 24, 91, 0.3); 
+        }
+        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(194, 24, 91, 0.4); }
+        .btn-secondary { background: var(--bg-sidebar); border: 1px solid var(--border); color: var(--text-main); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .log-container {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--text-muted);
+            max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 16px;
+        }
+
+        /* --- QUIZ STYLES --- */
+        .quiz-container { max-width: 900px; margin: 0 auto; padding-bottom: 100px; }
+        .question-card { margin-bottom: 2rem; padding: 2rem; }
+        .option-label {
+            display: flex; align-items: center; gap: 12px; padding: 1rem; border-radius: 12px;
+            background: rgba(0,0,0,0.02); border: 1px solid var(--border); cursor: pointer; font-weight: 500;
+        }
+        .option-label:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
+        .option-label.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #166534; }
+        .option-label.incorrect { background: #fee2e2 !important; border-color: #ef4444 !important; color: #991b1b; }
+        
+        .draggable-item { padding: 1rem; border-radius: 10px; background: var(--bg-sidebar); border: 1px solid var(--border); margin-bottom: 8px; cursor: grab; display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 0.9rem; }
+        .draggable-item i { color: var(--text-muted); }
+        .dragging { opacity: 0.4; }
+
+        /* --- DOCKER & STORAGE SPECIFICS --- */
+        .docker-aura { border: 2px dashed rgba(14, 165, 233, 0.3); border-radius: 14px; padding: 10px; min-height: 100px; position: relative; }
+        .replica-blob {
+            width: 40px; height: 40px; background: var(--secondary); color: white; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; position: absolute;
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3); transform: scale(0);
+        }
+        
+        .zone-label {
+            font-size: 0.65rem; font-weight: 900; color: var(--text-muted); 
+            background: var(--bg-page); padding: 2px 10px; border-radius: 6px; border: 1px solid var(--border);
+            position: absolute; top: -10px; left: 20px; text-transform: uppercase;
+        }
+
+        /* Certificate */
+        .certificate-box {
+            background: var(--bg-sidebar); border: 4px double var(--border); padding: 3rem; text-align: center;
+            border-radius: 30px; margin-top: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1); position: relative;
+        }
+        .certificate-box::before { content: ''; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px; border: 1px solid var(--border); border-radius: 20px; pointer-events: none; }
+
+    </style>
+</head>
+<body id="app-body">
+
+    <header class="glass" style="border-radius: 0; margin-bottom: 0;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="logo-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="location.reload()">
+                <svg width="210" height="40" viewBox="0 8 280 40" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+                  <path d="M 10 15 L 15 15 L 15 33 L 10 33 A 9 9 0 0 1 10 15 Z" fill="#0157c8" />
+                  <path d="M 33 15 L 38 15 A 9 9 0 0 1 38 33 L 33 33 Z" fill="#e11c5f" />
+                  <path d="M 15 10 A 9 9 0 0 1 33 10 L 33 15 L 15 15 Z" fill="#e11c5f" />
+                  <path d="M 15 33 L 33 33 L 33 38 A 9 9 0 0 1 15 38 Z" fill="#00439c" />
+                  <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
+                  <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
+                  <text x="50" y="34" font-family="'Outfit', 'Arial', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
+                  <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
+                </svg>
+            </div>
+        </div>
+        <nav id="main-nav" style="margin-right: auto; margin-left: 20px;">
+            <div data-target="cluster" class="nav-link active">Simulador de Cluster</div>
+            <div data-target="storage" class="nav-link">Arquitetura de Storage</div>
+            <div data-target="guia" class="nav-link">Guia de Estudos</div>
+            <div data-target="prova" class="nav-link">Avaliação Final</div>
+        </nav>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <span id="score-badge" style="font-size: 0.75rem; font-weight: 800; padding: 4px 12px; background: var(--primary); color: white; border-radius: 20px; display: none;">SCORE: 0%</span>
+            <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
+        </div>
+    </header>
+
+    <main class="main-container">
+        
+        <!-- PAGE: Cluster Simulation -->
+        <section id="page-cluster" class="page active grid-layout">
+                <div class="simulation-canvas glass">
+                    <svg class="svg-overlay" id="cluster-svg"></svg>
+                    
+                    <!-- Entry Gateway -->
+                    <div style="display: flex; justify-content: center;">
+                        <div class="node" id="gateway" style="width: 180px; padding: 10px;">
+                            <div class="node-header"><i class="fa-solid fa-lock"></i> <span>Gateway / VIP</span></div>
+                            <div class="node-status" style="background: var(--info); color: white;">KEEP ALIVE ACTIVE</div>
+                        </div>
+                    </div>
+
+                    <!-- Application Zone -->
+                    <div class="node" style="border-style: dotted; min-height: 280px; background: rgba(0,0,0,0.01);">
+                        <div class="zone-label">Application Orchestration Cluster (Docker Swarm)</div>
+                        <div style="display: flex; gap: 20px; justify-content: center; height: 100%;">
+                            <!-- Node 1 -->
+                            <div class="node master" id="c-node-1" style="flex: 1; max-width: 250px;">
+                                <div class="node-header"><span>SERVER-01</span> <i class="fa-brands fa-linux"></i></div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;" id="c-node-1-services">
+                                    <div class="service-box compute"><i class="fa-brands fa-php"></i><span>PHP</span></div>
+                                    <div class="service-box compute"><i class="fa-solid fa-server"></i><span>API</span></div>
+                                </div>
+                                <div class="node-status">QUORUM LEADER</div>
+                            </div>
+                            <!-- Node 2 -->
+                            <div class="node" id="c-node-2" style="flex: 1; max-width: 250px;">
+                                <div class="node-header"><span>SERVER-02</span> <i class="fa-brands fa-linux"></i></div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;" id="c-node-2-services">
+                                    <div class="service-box compute"><i class="fa-brands fa-php"></i><span>PHP</span></div>
+                                    <div class="service-box compute"><i class="fa-solid fa-server"></i><span>API</span></div>
+                                </div>
+                                <div class="node-status">OPERATIONAL</div>
+                            </div>
+                            <!-- Node 3 -->
+                            <div class="node" id="c-node-3" style="flex: 1; max-width: 250px;">
+                                <div class="node-header"><span>SERVER-03</span> <i class="fa-brands fa-linux"></i></div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;" id="c-node-3-services">
+                                    <div class="service-box compute"><i class="fa-brands fa-php"></i><span>PHP</span></div>
+                                    <div class="service-box compute"><i class="fa-solid fa-server"></i><span>API</span></div>
+                                </div>
+                                <div class="node-status">OPERATIONAL</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Database Layer -->
+                    <div style="display: flex; justify-content: center;">
+                        <div class="node" id="db-node" style="width: 400px; border-color: var(--accent);">
+                            <div class="node-header"><span>Dedicated Database Layer</span> <i class="fa-solid fa-database"></i></div>
+                            <div style="display: flex; gap: 15px; align-items: center; padding: 10px;">
+                                <i class="fa-solid fa-server" style="font-size: 2rem; color: var(--accent);"></i>
+                                <div>
+                                    <div style="font-weight: 800; font-size: 0.9rem;">ORACLE 19C CLUSTER</div>
+                                    <div style="font-size: 0.6rem; opacity: 0.7;">Persistent Transaction Log & Data Blocks</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                  <div class="sidebar-slot"></div>
+        </section>
+
+        <!-- PAGE: Storage Architecture -->
+        <section id="page-storage" class="page grid-layout">
+                <div class="simulation-canvas glass">
+                    <svg class="svg-overlay" id="storage-svg"></svg>
+                    
+                    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                        <div class="node" id="volume-node" style="width: 350px; border-color: var(--success);">
+                            <div class="node-header"><span>Volume Virtual /docker</span> <i class="fa-solid fa-cloud"></i></div>
+                            <div style="text-align: center; padding: 15px; font-weight: 800; color: var(--success);">
+                                GLUSTERFS REPLICATED (3x)
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 30px; justify-content: center;">
+                        <!-- Storage Node 1 -->
+                        <div class="node" id="s-node-1" style="flex: 1; max-width: 250px;">
+                            <div class="node-header"><span>BRICK N1</span></div>
+                            <div class="docker-aura" id="s-node-1-docker"></div>
+                            <div class="service-box storage"><i class="fa-solid fa-hard-drive"></i><span>BRICK-01</span></div>
+                        </div>
+                        <!-- Storage Node 2 -->
+                        <div class="node" id="s-node-2" style="flex: 1; max-width: 250px;">
+                            <div class="node-header"><span>BRICK N2</span></div>
+                            <div class="docker-aura" id="s-node-2-docker"></div>
+                            <div class="service-box storage"><i class="fa-solid fa-hard-drive"></i><span>BRICK-02</span></div>
+                        </div>
+                        <!-- Storage Node 3 -->
+                        <div class="node" id="s-node-3" style="flex: 1; max-width: 250px;">
+                            <div class="node-header"><span>BRICK N3</span></div>
+                            <div class="docker-aura" id="s-node-3-docker"></div>
+                            <div class="service-box storage"><i class="fa-solid fa-hard-drive"></i><span>BRICK-03</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE: Guia de Estudos -->
+            <section id="page-guia" class="page">
+                <div class="quiz-container">
+                    <div class="glass" style="padding: 2.5rem; margin-bottom: 2rem;">
+                        <h2 style="font-weight: 800; margin-top: 0;"><i class="fa-solid fa-graduation-cap"></i> Trilha de Aprendizagem HA</h2>
+                        <p style="color: var(--text-muted); line-height: 1.6;">Esta arquitetura foi desenhada para tolerar falhas de hardware e software através de múltiplos níveis de redundância. Estude os tópicos abaixo antes da avaliação.</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 2rem;">
+                            <div class="glass" style="padding: 1.5rem;">
+                                <h4 style="margin: 0 0 10px; color: var(--primary);">1. Rede e VIP</h4>
+                                <p style="font-size: 0.8rem; margin: 0;">O Keepalived garante que o IP 192.168.1.100 sempre responda, mesmo que o primeiro servidor queime. O VIP "pula" para o próximo nó em menos de 1 segundo.</p>
+                            </div>
+                            <div class="glass" style="padding: 1.5rem;">
+                                <h4 style="margin: 0 0 10px; color: #ec4899;">2. Storage Distribuído</h4>
+                                <p style="font-size: 0.8rem; margin: 0;">Usamos GlusterFS em modo réplica 3. Cada arquivo gravado é enviado simultaneamente para 3 discos físicos diferentes. Sincronismo 100% garantido.</p>
+                            </div>
+                            <div class="glass" style="padding: 1.5rem;">
+                                <h4 style="margin: 0 0 10px; color: var(--secondary);">3. Orquestração Swarm</h4>
+                                <p style="font-size: 0.8rem; margin: 0;">O Docker Swarm mantém o número desejado de réplicas. Se um serviço cair, ele o recria em outro nó automaticamente.</p>
+                            </div>
+                            <div class="glass" style="padding: 1.5rem;">
+                                <h4 style="margin: 0 0 10px; color: var(--accent);">4. Banco de Dados</h4>
+                                <p style="font-size: 0.8rem; margin: 0;">A camada de dados Oracle é isolada da camada web para garantir que IOPS de escrita não afetem a latência de entrega de conteúdo estático.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass" style="padding: 2.5rem;">
+                        <h3 style="font-weight: 800;">Hardware Recomendado (Per Node)</h3>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="text-align: left; color: var(--text-muted); border-bottom: 1px solid var(--border);">
+                                    <th style="padding: 10px;">Item</th>
+                                    <th>Especificação</th>
+                                    <th>Finalidade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <td style="padding: 12px; font-weight: 700;">vCPU</td>
+                                    <td>2 Cores (Min)</td>
+                                    <td>Processamento de PHP/FPM e APIs</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <td style="padding: 12px; font-weight: 700;">RAM</td>
+                                    <td>8 GB</td>
+                                    <td>Cache GlusterFS e Docker Runtimes</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <td style="padding: 12px; font-weight: 700;">Disk</td>
+                                    <td>300 GB NVMe</td>
+                                    <td>Bricks do GlusterFS (LVM)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                      <div class="quiz-container">
+                    <div id="quiz-intro" class="glass" style="padding: 3rem; text-align: center; margin-bottom: 2rem;">
+                        <i class="fa-solid fa-file-signature" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                        <h2 style="font-weight: 800;">Avaliação de Conhecimento HA</h2>
+                        <p style="color: var(--text-muted);">Responda as questões abaixo para validar sua compreensão da infraestrutura Solus Saúde. É necessário 70% de acerto para certificação.</p>
+                        <button class="btn btn-primary" onclick="startQuiz()" style="max-width: 250px; margin: 2rem auto 0;">INICIAR PROVA</button>
+                    </div>
+
+                    <div id="quiz-questions" style="display: none;">
+                        <!-- Questions will be injected here -->
+                    </div>
+
+                    <div id="quiz-result" style="display: none;">
+                        <!-- Results will be injected here -->
+                    </div>
+                </div>
+                <div class="sidebar-slot"></div>
+            </section>
+        </main>
+
+        <!-- Right Side: Control & Logs -->
+        <aside class="control-panel">
+            <div class="card glass">
+                <div id="sim-controls">
+                    <div id="explanation-area" class="explanation-box">
+                        <h4 id="exp-title">Bem-vindo</h4>
+                        <p id="exp-desc">Selecione uma simulação ou guia no menu superior para começar.</p>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <button class="btn btn-primary" id="btn-next">AVANÇAR ETAPA</button>
+                        <button class="btn btn-secondary" id="btn-reset">RESETAR SIMULAÇÃO</button>
+                    </div>
+                </div>
+                
+                <div id="quiz-controls" style="display: none;">
+                    <div class="explanation-box success-state" style="border-color: var(--primary); min-height: auto;">
+                        <h4 style="margin:0">Progresso da Prova</h4>
+                        <div style="width: 100%; height: 8px; background: rgba(0,0,0,0.1); border-radius: 4px; margin-top: 10px;">
+                            <div id="quiz-progress-bar" style="width: 0%; height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s;"></div>
+                        </div>
+                        <p style="font-size: 0.7rem; margin: 8px 0 0;" id="quiz-counter">Questão 0 de 0</p>
+                    </div>
+                    <button class="btn btn-primary" id="btn-submit-quiz" style="display: none;">FINALIZAR E CORRIGIR</button>
+                </div>
+            </div>
+
+            <div class="card glass">
+                <h4 style="margin: 0 0 12px; font-size: 0.75rem; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 8px; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-terminal"></i> EVENT LOG
+                </h4>
+                <div class="log-container" id="app-log">
+                    <div>[INFRA] Ready to simulate...</div>
+                </div>
+            </div>
+        </aside>
+
+    </main>
+   </div>
+            </div>
+
+        </aside>
+
+    </div>
+
+    <footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">
+        Solus Saúde | High Availability Training v2.0 - Desenvolvido por Paulo Ricardo Borges
+    </footer>
+
+    <script>
+        // --- THEME PERSISTENCE ---
+        (function() {
+            if (localStorage.getItem('solus-theme') === 'dark') {
+                document.getElementById('app-body').classList.add('dark-mode');
+                var btn = document.getElementById('theme-toggle');
+                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        })();
+
+        // --- DATA & STATE ---
+        const state = {
+            currentPage: 'cluster',
+            clusterStage: 0,
+            storageStage: 0,
+            quizActive: false,
+            currentQuestion: 0,
+            answers: {},
+            score: 0
+        };
+
+        const clusterStages = [
+            {
+                title: "Operação Normal",
+                desc: "Cluster saudável. O VIP está no Nó 1. As conexões fluem do Gateway para o Nó 1 e deste para o Banco de Dados.",
+                log: "Operação Normal. Keepalived MASTER no Nó 1.",
+                setup: () => {
+                    resetSimulation();
+                    setNodeState('c-node-1', 'master');
+                    drawFlow('gateway', 'c-node-1', 'primary');
+                    drawFlow('c-node-1', 'db-node', 'success');
+                }
+            },
+            {
+                title: "Falha do Nó 1",
+                desc: "O Nó 1 perde a conectividade. O Gateway detecta o timeout do Keepalived e prepara a migração do IP Virtual.",
+                log: "CRÍTICO: Heartbeat perdido no Nó 1.",
+                setup: () => {
+                    setNodeState('c-node-1', 'failed');
+                    clearFlows();
+                    drawFlow('gateway', 'c-node-1', 'danger');
+                }
+            },
+            {
+                title: "Failover Concluído",
+                desc: "O Nó 2 assume como MASTER. O tráfego é redirecionado instantaneamente. O Docker Swarm inicia a migração das réplicas que estavam no nó falho.",
+                log: "FAILOVER: Nó 2 agora é o MASTER do cluster.",
+                setup: () => {
+                    setNodeState('c-node-1', 'failed');
+                    setNodeState('c-node-2', 'master');
+                    clearFlows();
+                    drawFlow('gateway', 'c-node-2', 'primary');
+                    drawFlow('c-node-2', 'db-node', 'success');
+                }
+            },
+            {
+                title: "Perda de Quorum",
+                desc: "Se o Nó 3 também falhar, sobrando apenas 1 manager ativo, o cluster perde o 'Quorum'. O storage entra em modo RO e o swarm não aceita novos agendamentos.",
+                log: "ALERTA: Quorum perdido. Cluster em modo degredado.",
+                setup: () => {
+                    setNodeState('c-node-1', 'failed');
+                    setNodeState('c-node-3', 'failed');
+                    setNodeState('c-node-2', 'master');
+                    clearFlows();
+                    drawFlow('gateway', 'c-node-2', 'danger');
+                }
+            },
+            {
+                title: "Recuperação Total",
+                desc: "Ao religar os servidores, o cluster se recompõe. No entanto, os serviços permanecem concentrados no nó que ficou ativo, aguardando rebalanceamento manual.",
+                log: "INFRA: Cluster recuperado. Quorum reestabelecido.",
+                setup: () => {
+                    document.querySelectorAll('.node').forEach(n => n.classList.remove('failed'));
+                    setNodeState('c-node-2', 'master');
+                    clearFlows();
+                    drawFlow('gateway', 'c-node-2', 'primary');
+                    drawFlow('c-node-2', 'db-node', 'success');
+                }
+            }
+        ];
+
+        const storageStages = [
+            {
+                title: "Escrita Distribuída",
+                desc: "Toda escrita feita nos serviços montados em /docker é replicada em tempo real para os 3 bricks do GlusterFS.",
+                log: "Escrita síncrona iniciada em todos os bricks.",
+                setup: () => {
+                    resetSimulation();
+                    createBlob(0); createBlob(1); createBlob(2);
+                    setTimeout(() => {
+                        drawLine('s-node-1-docker', 'volume-node', 'storage');
+                        drawLine('s-node-2-docker', 'volume-node', 'storage');
+                        drawLine('s-node-3-docker', 'volume-node', 'storage');
+                    }, 500);
+                }
+            },
+            {
+                title: "Auto-Healing",
+                desc: "Após a volta de um nó que estava offline, o demônio de auto-heal do GlusterFS detecta blocos defasados e os sincroniza automaticamente.",
+                log: "Storage Sync: Sincronizando blocos desatualizados.",
+                setup: () => {
+                    clearFlows();
+                    setNodeState('s-node-2', 'master'); // visual state
+                    drawLine('s-node-1', 's-node-2', 'success');
+                    drawLine('s-node-3', 's-node-2', 'success');
+                }
+            }
+        ];
+
+        const questions = [
+            {
+                q: "Qual o número mínimo de nós gerentes (managers) para tolerar a falha de 1 deles no Docker Swarm?",
+                o: ["1 nó", "2 nós", "3 nós", "5 nós"],
+                a: 2
+            },
+            {
+                q: "Qual protocolo é utilizado pelo Keepalived para gerenciar o IP Flutuante (VIP)?",
+                o: ["HTTP/S", "VRRP", "TCP/IP", "Raft"],
+                a: 1
+            },
+            {
+                q: "No GlusterFS, o que acontece quando um nó volta a ficar online após uma falha?",
+                o: ["O cluster é reiniciado", "Os dados são apagados", "O Self-Heal sincroniza blocos defasados", "Nada acontece"],
+                a: 2
+            },
+            {
+                q: "Qual a função principal do Nginx nesta arquitetura?",
+                o: ["Armazenar PDFs", "Gerenciar o Banco de Dados", "Proxy Reverso e Terminação SSL", "Orquestrar Contêineres"],
+                a: 2
+            }
+        ];
+
+        // --- CORE LOGIC ---
+        function switchPage(page) {
+            state.currentPage = page;
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(p => p.classList.remove('active'));
+            
+            const activePage = document.getElementById('page-' + page);
+            activePage.classList.add('active');
+            
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.toggle('active', l.dataset.target === page);
+            });
+
+            // Handle sidebar relocation for grid layout
+            const sidebar = document.querySelector('.control-panel');
+            const slot = activePage.querySelector('.sidebar-slot');
+            
+            if (slot) {
+                slot.appendChild(sidebar);
+                sidebar.style.display = 'flex';
+                activePage.classList.add('grid-layout');
+            } else {
+                sidebar.style.display = 'none';
+                activePage.classList.remove('grid-layout');
+            }
+
+            // Toggle sidebar areas
+            document.getElementById('sim-controls').style.display = (page === 'cluster' || page === 'storage') ? 'block' : 'none';
+            document.getElementById('quiz-controls').style.display = (page === 'prova') ? 'block' : 'none';
+
+            if(page === 'cluster') setStage(0, 'cluster');
+            if(page === 'storage') setStage(0, 'storage');
+        }
+
+        function setStage(idx, type) {
+            const data = type === 'cluster' ? clusterStages[idx] : storageStages[idx];
+            if(!data) return;
+
+            document.getElementById('exp-title').textContent = data.title;
+            document.getElementById('exp-desc').textContent = data.desc;
+            addLog(data.log);
+            data.setup();
+        }
+
+        function addLog(msg) {
+            const logBox = document.getElementById('app-log');
+            const entry = document.createElement('div');
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logBox.prepend(entry);
+        }
+
+        // --- SIMULATION UTILS ---
+        function drawFlow(fromId, toId, type) {
+            const svg = document.getElementById(state.currentPage + '-svg');
+            const from = document.getElementById(fromId).getBoundingClientRect();
+            const to = document.getElementById(toId).getBoundingClientRect();
+            const canvasRect = svg.getBoundingClientRect();
+
+            const x1 = from.left + from.width/2 - canvasRect.left;
+            const y1 = from.top + from.height/2 - canvasRect.top;
+            const x2 = to.left + to.width/2 - canvasRect.left;
+            const y2 = to.top + to.height/2 - canvasRect.top;
+
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+            line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+            line.setAttribute('class', `link-flow ${type}`);
+            svg.appendChild(line);
+        }
+
+        function drawLine(fromId, toId, type) {
+            drawFlow(fromId, toId, type); // same logic for now
+        }
+
+        function clearFlows() {
+            document.querySelectorAll('.svg-overlay').forEach(svg => svg.innerHTML = '');
+        }
+
+        function setNodeState(id, s) {
+            const el = document.getElementById(id);
+            if(!el) return;
+            el.classList.remove('failed', 'master');
+            if(s === 'failed') el.classList.add('failed');
+            if(s === 'master') el.classList.add('master');
+        }
+
+        function resetSimulation() {
+            clearFlows();
+            document.querySelectorAll('.node').forEach(n => n.classList.remove('failed', 'master'));
+            document.querySelectorAll('.replica-blob').forEach(b => b.remove());
+            state.clusterStage = 0;
+            state.storageStage = 0;
+        }
+
+        function createBlob(nodeIdx) {
+            const area = document.getElementById(`s-node-${nodeIdx+1}-docker`);
+            const blob = document.createElement('div');
+            blob.className = 'replica-blob';
+            blob.innerHTML = '<i class="fa-brands fa-docker"></i>';
+            area.appendChild(blob);
+            setTimeout(() => blob.style.transform = 'scale(1)', 100);
+        }
+
+        // --- QUIZ LOGIC ---
+        function startQuiz() {
+            state.quizActive = true;
+            state.currentQuestion = 0;
+            state.answers = {};
+            document.getElementById('quiz-intro').style.display = 'none';
+            document.getElementById('quiz-questions').style.display = 'block';
+            document.getElementById('quiz-controls').style.display = 'block';
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const q = questions[state.currentQuestion];
+            const container = document.getElementById('quiz-questions');
+            container.innerHTML = `
+                <div class="question-card glass">
+                    <h3 style="margin-top:0">Questão ${state.currentQuestion + 1} de ${questions.length}</h3>
+                    <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1.5rem;">${q.q}</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        ${q.o.map((opt, i) => `
+                            <label class="option-label" onclick="selectOption(${i})">
+                                <input type="radio" name="q" ${state.answers[state.currentQuestion] === i ? 'checked' : ''} style="display:none">
+                                <div style="width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <div style="width: 10px; height: 10px; background: var(--primary); border-radius: 50%; display: ${state.answers[state.currentQuestion] === i ? 'block' : 'none'}"></div>
+                                </div>
+                                ${opt}
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 2rem;">
+                         <button class="btn btn-secondary" onclick="prevQ()" ${state.currentQuestion === 0 ? 'disabled' : ''}>Anterior</button>
+                         <button class="btn btn-primary" onclick="nextQ()">${state.currentQuestion === questions.length - 1 ? 'Revisar' : 'Próxima'}</button>
+                    </div>
+                </div>
+            `;
+            updateQuizProgress();
+        }
+
+        function selectOption(idx) {
+            state.answers[state.currentQuestion] = idx;
+            renderQuestion();
+        }
+
+        function nextQ() { 
+            if(state.currentQuestion < questions.length - 1) {
+                state.currentQuestion++;
+                renderQuestion();
+            } else {
+                document.getElementById('btn-submit-quiz').style.display = 'block';
+            }
+        }
+        function prevQ() { if(state.currentQuestion > 0) { state.currentQuestion--; renderQuestion(); } }
+
+        function updateQuizProgress() {
+            const count = Object.keys(state.answers).length;
+            const pc = (count / questions.length) * 100;
+            document.getElementById('quiz-progress-bar').style.width = pc + '%';
+            document.getElementById('quiz-counter').textContent = `Questão ${state.currentQuestion + 1} de ${questions.length} (${count} respondidas)`;
+        }
+
+        document.getElementById('btn-submit-quiz').onclick = () => {
+            let correct = 0;
+            questions.forEach((q, i) => {
+                if(state.answers[i] === q.a) correct++;
+            });
+            const pc = Math.round((correct / questions.length) * 100);
+            
+            const resultArea = document.getElementById('quiz-result');
+            document.getElementById('quiz-questions').style.display = 'none';
+            document.getElementById('btn-submit-quiz').style.display = 'none';
+            resultArea.style.display = 'block';
+
+            let msg = '';
+            if(pc >= 75) {
+                msg = `
+                    <div class="certificate-box glass">
+                        <i class="fa-solid fa-trophy" style="font-size: 4rem; color: #f59e0b; margin-bottom: 1.5rem;"></i>
+                        <h2 style="font-weight: 800; color: var(--primary); font-size: 2.2rem; margin: 0;">CERTIFICADO DE EXCELÊNCIA</h2>
+                        <p style="margin: 1.5rem 0 0.5rem; text-transform: uppercase; font-weight: 800; letter-spacing: 2px;">Concedido a:</p>
+                        <input type="text" placeholder="DIGITE SEU NOME" style="width: 100%; max-width: 500px; border: none; border-bottom: 2px solid var(--border); text-align: center; font-size: 1.8rem; font-family: Outfit; font-weight: 700; background: transparent; color: var(--text-main); margin-bottom: 2rem;">
+                        <p style="font-size: 1.1rem; color: var(--text-muted); line-height: 1.8;">Por demonstrar domínio técnico avançado na arquitetura de <br><strong>Alta Disponibilidade Solus Saúde</strong> com aproveitamento de <strong>${pc}%</strong>.</p>
+                        <div style="margin-top: 3rem; display: flex; justify-content: center; gap: 40px;">
+                            <div style="text-align: center;"><div style="width: 150px; border-bottom: 1px solid var(--text-muted); margin-bottom: 5px;"></div><span style="font-size: 0.6rem;">DIRETORIA TÉCNICA</span></div>
+                            <div style="text-align: center;"><div style="width: 150px; border-bottom: 1px solid var(--text-muted); margin-bottom: 5px;"></div><span style="font-size: 0.6rem;">DATA: ${new Date().toLocaleDateString()}</span></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                msg = `
+                    <div class="glass" style="padding: 3rem; text-align: center; border-color: var(--danger);">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 3rem; color: var(--danger);"></i>
+                        <h2 style="font-weight: 800;">Resultado: ${pc}%</h2>
+                        <p>Você não atingiu a pontuação mínima de 70%. Recomendamos revisar o Guia de Estudos e as Simulações.</p>
+                        <button class="btn btn-secondary" onclick="startQuiz()" style="max-width: 200px; margin: 2rem auto 0;">TENTAR NOVAMENTE</button>
+                    </div>
+                `;
+            }
+            resultArea.innerHTML = msg;
+            document.getElementById('score-badge').textContent = `SCORE: ${pc}%`;
+            document.getElementById('score-badge').style.display = 'block';
+        };
+
+        // --- INIT ---
+        document.getElementById('main-nav').addEventListener('click', (e) => {
+            if(e.target.dataset.target) switchPage(e.target.dataset.target);
+        });
+
+        document.getElementById('btn-next').onclick = () => {
+            if(state.currentPage === 'cluster') {
+                state.clusterStage = (state.clusterStage + 1) % clusterStages.length;
+                setStage(state.clusterStage, 'cluster');
+            } else if(state.currentPage === 'storage') {
+                state.storageStage = (state.storageStage + 1) % storageStages.length;
+                setStage(state.storageStage, 'storage');
+            }
+        };
+
+        document.getElementById('btn-reset').onclick = resetSimulation;
+
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            var body = document.getElementById('app-body');
+            body.classList.toggle('dark-mode');
+            var isDark = body.classList.contains('dark-mode');
+            this.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
+        });
+
+        // Resize handler for SVG links
+        window.addEventListener('resize', () => {
+            if(state.currentPage === 'cluster' || state.currentPage === 'storage') {
+                const currentIdx = state.currentPage === 'cluster' ? state.clusterStage : state.storageStage;
+                setStage(currentIdx, state.currentPage);
+            }
+        });
+
+        switchPage('cluster');
+    </script>
+</body>
+</html>
+
