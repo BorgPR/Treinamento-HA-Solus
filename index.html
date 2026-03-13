@@ -345,10 +345,10 @@
         </div>
         
         <div style="display: flex; gap: 15px; align-items: center;">
-            <a href="gerenciamento.html" style="text-decoration: none; color: var(--text-muted); font-size: 0.85rem; font-weight: 700; background: rgba(0,0,0,0.03); padding: 8px 16px; border-radius: 8px;"><i class="fa-solid fa-lock"></i> Área TIP</a>
             <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
         </div>
     </header>
+
 
     <main style="flex: 1; position: relative; z-index: 1;">
 
@@ -492,6 +492,15 @@
             btn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
         });
+
+        // ACESSO OCULTO À ÁREA TIP (Ctrl + Shift + T)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'T') {
+                e.preventDefault();
+                window.location.href = 'gerenciamento.html';
+            }
+        });
     </script>
+
 </body>
 </html>
