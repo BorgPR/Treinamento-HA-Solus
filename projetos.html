@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Status de Projetos de Infraestrutura e Implantação — Solus Saúde">
+    <title>Solus HA | Área do Cliente - Projetos</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #004a99;
+            --primary-glow: rgba(0, 74, 153, 0.3);
+            --secondary: #c2185b;
+            --accent: #8e24aa;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #0ea5e9;
+
+            --bg-page: #f0f4f8;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-sidebar: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 40px -10px rgba(0,0,0,0.12);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.6);
+        }
+
+        .dark-mode {
+            --bg-page: #020617;
+            --bg-card: rgba(15, 23, 42, 0.65);
+            --bg-sidebar: #0f172a;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse at 10% 20%, rgba(0,74,153,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(194,24,91,0.07) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .dark-mode body::before {
+            background:
+                radial-gradient(ellipse at 10% 20%, rgba(0,74,153,0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(194,24,91,0.12) 0%, transparent 50%);
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            padding: 0.9rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(12px);
+        }
+
+        .theme-btn {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .theme-btn:hover { background: var(--bg-page); }
+
+        .btn-back {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.03);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-back:hover { background: var(--border); color: var(--text-main); }
+
+        .auth-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            box-shadow: var(--shadow);
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 450px;
+            padding: 3rem 2.5rem;
+            text-align: center;
+        }
+
+        .auth-icon {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .auth-desc {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .token-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: var(--bg-page);
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-align: center;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .token-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .token-input::placeholder {
+            color: var(--border);
+            letter-spacing: normal;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 400;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(194, 24, 91, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(194, 24, 91, 0.3);
+        }
+
+        .error-msg {
+            color: var(--danger, #ef4444);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* --- DASHBOARD STYLES --- */
+        #dashboard { display: none; padding: 3rem 2rem; max-width: 1200px; margin: 0 auto; width: 100%; position: relative; z-index: 1; }
+        
+        .client-header {
+            display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;
+            padding-bottom: 2rem; border-bottom: 1px solid var(--border);
+        }
+        
+        .client-info h1 { font-size: 2.2rem; font-weight: 900; margin-bottom: 5px; color: var(--primary); }
+        .client-info p { font-size: 1.1rem; color: var(--text-muted); font-weight: 500; }
+        .client-info span { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; background: var(--border); padding: 4px 10px; border-radius: 6px; }
+        
+        .status-badge {
+            padding: 8px 20px; border-radius: 20px; font-weight: 800; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .status-badge.active { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        .progress-box { padding: 2.5rem; margin-bottom: 3rem; }
+        .progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .progress-header h3 { margin: 0; font-size: 1.2rem; font-weight: 800; }
+        .progress-percent { font-size: 2rem; font-weight: 900; color: var(--primary); }
+        
+        .progress-bar-bg { width: 100%; height: 12px; background: rgba(0,0,0,0.05); border-radius: 10px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); border-radius: 10px; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); width: 0%; }
+
+        /* Timeline vertical */
+        .timeline { position: relative; padding-left: 40px; }
+        .timeline::before {
+            content: ''; position: absolute; left: 14px; top: 0; bottom: 0;
+            width: 4px; background: rgba(0,0,0,0.05); border-radius: 4px;
+        }
+        .dark-mode .timeline::before { background: rgba(255,255,255,0.05); }
+
+        .timeline-item { position: relative; margin-bottom: 2.5rem; }
+        .timeline-item:last-child { margin-bottom: 0; }
+        
+        .timeline-icon {
+            position: absolute; left: -40px; width: 32px; height: 32px; border-radius: 50%;
+            background: var(--bg-sidebar); border: 4px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-muted); font-size: 0.8rem; z-index: 2; transition: all 0.3s;
+        }
+
+        .timeline-item.done .timeline-icon {
+            background: var(--success); border-color: rgba(16, 185, 129, 0.2); color: white;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        }
+        .timeline-item.active .timeline-icon {
+            background: var(--primary); border-color: rgba(0, 74, 153, 0.2); color: white;
+            box-shadow: 0 0 0 6px var(--primary-glow); animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 var(--primary-glow); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 74, 153, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 74, 153, 0); }
+        }
+
+        .timeline-content {
+            background: var(--bg-sidebar); padding: 1.5rem; border-radius: 16px;
+            border: 1px solid var(--border); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        .timeline-item.active .timeline-content { border-color: var(--primary); transform: translateX(5px); }
+        
+        .timeline-content h4 { margin: 0 0 5px; font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+        .timeline-item.done .timeline-content h4 { color: var(--text-muted); }
+        
+        .timeline-content p { margin: 0; font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
+        .timeline-date { font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-top: 10px; display: inline-block; background: rgba(0,74,153,0.1); padding: 4px 10px; border-radius: 6px; }
+        .timeline-item.done .timeline-date { color: var(--success); background: rgba(16, 185, 129, 0.1); }
+
+    </style>
+</head>
+<body id="app-body">
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="window.location.href='index.html'">
+            <svg width="210" height="40" viewBox="0 8 280 40" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+              <path d="M 10 15 L 15 15 L 15 33 L 10 33 A 9 9 0 0 1 10 15 Z" fill="#0157c8" />
+              <path d="M 33 15 L 38 15 A 9 9 0 0 1 38 33 L 33 33 Z" fill="#e11c5f" />
+              <path d="M 15 10 A 9 9 0 0 1 33 10 L 33 15 L 15 15 Z" fill="#e11c5f" />
+              <path d="M 15 33 L 33 33 L 33 38 A 9 9 0 0 1 15 38 Z" fill="#00439c" />
+              <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
+              <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
+              <text x="50" y="34" font-family="'Outfit', 'Arial', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
+              <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
+            </svg>
+        </div>
+        
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left-long"></i> Portal</a>
+            <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
+        </div>
+    </header>
+
+    <!-- TELA DE LOGIN -->
+    <main class="auth-container" id="login-view">
+        <div class="auth-card glass">
+            <div class="auth-icon"><i class="fa-duotone fa-solid fa-timeline"></i></div>
+            <h1 class="auth-title">Acompanhamento do Projeto</h1>
+            <p class="auth-desc">Insira o código do seu projeto (Token) para visualizar a linha do tempo e o progresso da implantação da sua Infraestrutura Solus HA.</p>
+            
+            <div class="input-group">
+                <label for="token">Token do Projeto (ex: SLX-001)</label>
+                <input type="text" id="token" class="token-input" placeholder="Digite o token recebido" autocomplete="off" onkeypress="if(event.key === 'Enter') checkToken()">
+                <div id="error-msg" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Token não encontrado ou inválido.</div>
+            </div>
+
+            <button class="btn-submit" onclick="checkToken()">
+                Acessar Dashboard <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            </button>
+        </div>
+    </main>
+
+    <!-- DASHBOARD DO CLIENTE -->
+    <main id="dashboard">
+        <div class="client-header">
+            <div class="client-info">
+                <h1 id="cli-nome">Solus Cliente Exemplo S/A</h1>
+                <p>Implantação Solus HA v2.0 &nbsp;&bull;&nbsp; <span id="cli-token">SLX-000</span></p>
+            </div>
+            <div class="status-badge active"><i class="fa-solid fa-spinner fa-spin-pulse"></i> Em Andamento</div>
+        </div>
+
+        <div class="progress-box glass">
+            <div class="progress-header">
+                <h3>Progresso Geral da Implantação</h3>
+                <div class="progress-percent" id="prog-percent">0%</div>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="prog-bar"></div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 1.5rem; font-weight: 800; font-size: 1.4rem;"><i class="fa-solid fa-list-check" style="color: var(--primary);"></i> Linha do Tempo (Cronograma)</h3>
+        
+        <div class="timeline" id="timeline-container">
+            <!-- Items da timeline gerados via JS -->
+        </div>
+    </main>
+
+    <!-- "BANCO DE DADOS" JSON FAKE DIRETAMENTE NO JS -->
+    <script>
+        // --- THEME PERSISTENCE ---
+        (function() {
+            if (localStorage.getItem('solus-theme') === 'dark') {
+                document.getElementById('app-body').classList.add('dark-mode');
+                var btn = document.getElementById('theme-toggle');
+                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        })();
+
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            var body = document.getElementById('app-body');
+            body.classList.toggle('dark-mode');
+            var isDark = body.classList.contains('dark-mode');
+            this.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
+        });
+
+        // --- DADOS DOS PROJETOS ---
+        // Você atualiza isso a cada avanço. A 'etapaAtual' dita qual fase está piscando (0 = Kickoff, 4 = Go Live)
+        const dbProjetos = {
+            "HOSP-2026": {
+                nome: "Hospital Modelo Brasil",
+                etapaAtual: 2, 
+                etapas: [
+                    { titulo: "Reunião de Kickoff", desc: "Alinhamento arquitetural, entrega do PDF de Requisitos e aprovação do cronograma.", data: "Concluído em: 01/03/2026", icon: "fa-bullhorn" },
+                    { titulo: "Provisão de Infraestrutura", desc: "Aguardando o cliente (ou nossa equipe cloud) realizar o provisionamento das 3 VMs NVMe + IPs de rede.", data: "Concluído em: 10/03/2026", icon: "fa-server" },
+                    { titulo: "Setup Solus HA", desc: "Instalação do Docker Swarm, GlusterFS, Keepalived no Cluster Master. Implantação do Nginx e VIP da aplicação.", data: "Em execução agora...", icon: "fa-layer-group" },
+                    { titulo: "Migração e Homologação", desc: "Copy/Sync do banco Oracle, deploy das imagens contêiner Solus, validação interna de acessos.", data: "Aguardando...", icon: "fa-vial" },
+                    { titulo: "Go-Live e Handover", desc: "Mapeamento do DNS final, virada da chave em produção e entrega de credenciais backoffice.", data: "Aguardando...", icon: "fa-rocket" }
+                ]
+            },
+            "CLIN-8899": {
+                nome: "Clínica Saúde Avançada",
+                etapaAtual: 4, 
+                etapas: [
+                    { titulo: "Reunião de Kickoff", desc: "Alinhamento inicial.", data: "15/02/2026", icon: "fa-bullhorn" },
+                    { titulo: "Provisão de Infraestrutura", desc: "VMs na AWS criadas.", data: "20/02/2026", icon: "fa-server" },
+                    { titulo: "Setup Solus HA", desc: "GlusterFS / VIP OK.", data: "28/02/2026", icon: "fa-layer-group" },
+                    { titulo: "Migração e Homologação", desc: "Testes validados com usuário final.", data: "10/03/2026", icon: "fa-vial" },
+                    { titulo: "Go-Live e Handover", desc: "Ambiente 100% produtivo. Entregue.", data: "Em execução agora...", icon: "fa-rocket" }
+                ]
+            }
+        };
+
+        // --- LÓGICA DO APP ---
+        function checkToken() {
+            const input = document.getElementById('token').value.trim().toUpperCase();
+            const err = document.getElementById('error-msg');
+            
+            if (dbProjetos[input]) {
+                err.style.display = 'none';
+                renderDashboard(input, dbProjetos[input]);
+            } else {
+                err.style.display = 'block';
+                // Shake animation opcional //
+                const card = document.querySelector('.auth-card');
+                card.style.transform = 'translateX(10px)';
+                setTimeout(() => card.style.transform = 'translateX(-10px)', 100);
+                setTimeout(() => card.style.transform = 'translateX(10px)', 200);
+                setTimeout(() => card.style.transform = 'translateX(0)', 300);
+            }
+        }
+
+        function renderDashboard(token, dados) {
+            // Oculta tela de login
+            document.getElementById('login-view').style.display = 'none';
+            // Mostra tela do projeto
+            const dash = document.getElementById('dashboard');
+            dash.style.display = 'block';
+
+            // Preenche infos do header
+            document.getElementById('cli-nome').textContent = dados.nome;
+            document.getElementById('cli-token').textContent = token;
+
+            // Calcula progresso da barra magica (ex: se são 5 etapas, a etapa 2 = 40%)
+            const total = dados.etapas.length;
+            const concluido = dados.etapaAtual;
+            
+            // Calculo para barra encher suave = (atual / (total - 1)) * 100
+            // se ta no 4 de 5, é 100%
+            let percent = total > 1 ? (concluido / (total - 1)) * 100 : 0;
+            if(percent > 100) percent = 100;
+            
+            setTimeout(() => {
+                document.getElementById('prog-bar').style.width = percent + '%';
+                // Animate numbers
+                let val = 0;
+                let intv = setInterval(() => {
+                    if(val >= percent) { clearInterval(intv); document.getElementById('prog-percent').textContent = Math.round(percent) + '%'; }
+                    else { val+=2; document.getElementById('prog-percent').textContent = val + '%'; }
+                }, 20);
+            }, 300);
+
+            // Mudar tag "Em andamento" pra "Concluido" se ja bateu 100%
+            if (percent === 100) {
+                const badge = document.querySelector('.status-badge');
+                badge.className = 'status-badge'; 
+                badge.style.background = 'var(--primary)';
+                badge.style.color = 'white';
+                badge.innerHTML = '<i class="fa-solid fa-check-double"></i> Projeto Entregue';
+            }
+
+            // Constroi a Timeline dinamicamente
+            const ctn = document.getElementById('timeline-container');
+            ctn.innerHTML = ''; // limpa antings
+            
+            dados.etapas.forEach((etapa, idx) => {
+                let statusClass = '';
+                let iconeExtra = '';
+
+                if (idx < dados.etapaAtual) {
+                    statusClass = 'done'; // ja passou
+                    iconeExtra = '<i class="fa-solid fa-check" style="margin-left:5px;"></i>';
+                } else if (idx === dados.etapaAtual) {
+                    statusClass = 'active'; // esta fazendo agora
+                    iconeExtra = '<i class="fa-solid fa-spinner fa-spin" style="margin-left:5px;"></i>';
+                }
+
+                // Cria o elemento
+                const item = document.createElement('div');
+                item.className = `timeline-item ${statusClass}`;
+                
+                // Icon do icone fa-check se terminou, senao icone da fase
+                const renderIcon = (statusClass === 'done') ? 'fa-solid fa-check' : `fa-solid ${etapa.icon}`;
+
+                item.innerHTML = `
+                    <div class="timeline-icon"><i class="${renderIcon}"></i></div>
+                    <div class="timeline-content">
+                        <h4>${etapa.titulo} ${iconeExtra}</h4>
+                        <p>${etapa.desc}</p>
+                        <span class="timeline-date">${etapa.data}</span>
+                    </div>
+                `;
+                ctn.appendChild(item);
+            });
+        }
+    </script>
+</body>
+</html>
