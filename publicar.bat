@@ -13,6 +13,7 @@ copy /Y "visaogeral.html" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "glusterfs.html" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "Treinamento_Final_HA.html" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "projetos.html" "\\172.16.80.15\WebTemp\infra\"
+copy /Y "dados-projetos.js" "\\172.16.80.15\WebTemp\infra\"
 
 echo.
 echo ==================================================
