@@ -10,6 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- BIBLIOTECA PARA PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 
     <style>
         :root {
@@ -236,6 +239,13 @@
                 <button class="btn-toggle" onclick="resetBoard()" title="Restaurar de fábrica">
                     <i class="fa-solid fa-rotate-right"></i>
                 </button>
+                <button class="btn-add" style="background: var(--info);" onclick="exportToPDF('kanban')" id="btn-pdf-kanban">
+                    <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+                </button>
+                <button class="btn-add" style="background: var(--info); display: none;" onclick="exportToPDF('cron')" id="btn-pdf-cron">
+                    <i class="fa-solid fa-file-pdf"></i> Relatório PDF
+                </button>
+
             </div>
         </div>
 
@@ -443,8 +453,13 @@
             document.getElementById('btn-lista').className = view === 'lista' ? 'btn-toggle active' : 'btn-toggle';
             document.getElementById('btn-cron').className = view === 'cron' ? 'btn-toggle active' : 'btn-toggle';
 
+            // Ajusta botões de PDF
+            document.getElementById('btn-pdf-kanban').style.display = (view === 'kanban' || view === 'lista') ? 'flex' : 'none';
+            document.getElementById('btn-pdf-cron').style.display = (view === 'cron') ? 'flex' : 'none';
+
             if(view === 'cron') renderCronList();
         }
+
 
         function getPrioIcon(p) {
             if (p === 'Urgente') return '<i class="fa-solid fa-triangle-exclamation"></i>';
@@ -714,6 +729,33 @@
 
             alert("Arquivo 'dados-projetos.js' gerado com sucesso!\n\nAgora: \n1 - Mova-o para a pasta do projeto\n2 - Execute o publicar.bat");
         }
+
+        // --- EXPORTAÇÃO PARA PDF PROFISSIONAL ---
+        function exportToPDF(type) {
+            const element = type === 'kanban' ? document.getElementById('view-kanban') : document.getElementById('view-cron');
+            const filename = type === 'kanban' ? 'Relatorio_Demandas_TIP.pdf' : 'Cronogramas_Projetos_Solus.pdf';
+            
+            // Customizando para o PDF ficar bonito
+            const opt = {
+                margin:       10,
+                filename:     filename,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            // Notificação visual de processamento
+            const btn = type === 'kanban' ? document.getElementById('btn-pdf-kanban') : document.getElementById('btn-pdf-cron');
+            const originalTxt = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+            btn.disabled = true;
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = originalTxt;
+                btn.disabled = false;
+            });
+        }
+
 
 
         // --- RENDERIZADOR MASTER ---
