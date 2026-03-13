@@ -400,28 +400,27 @@
         });
 
         // --- DADOS DOS PROJETOS ---
-        // Você atualiza isso a cada avanço. A 'etapaAtual' dita qual fase está piscando (0 = Kickoff, 4 = Go Live)
         const dbProjetos = {
-            "HOSP-2026": {
-                nome: "Hospital Modelo Brasil",
-                etapaAtual: 2, 
+            "UNIMED-BELEM": {
+                nome: "Unimed Belém",
+                etapaAtual: 1, // 0 = Kickoff, 1 = Provisão, 2 = Setup, 3 = Migração, 4 = Go Live
                 etapas: [
-                    { titulo: "Reunião de Kickoff", desc: "Alinhamento arquitetural, entrega do PDF de Requisitos e aprovação do cronograma.", data: "Concluído em: 01/03/2026", icon: "fa-bullhorn" },
-                    { titulo: "Provisão de Infraestrutura", desc: "Aguardando o cliente (ou nossa equipe cloud) realizar o provisionamento das 3 VMs NVMe + IPs de rede.", data: "Concluído em: 10/03/2026", icon: "fa-server" },
-                    { titulo: "Setup Solus HA", desc: "Instalação do Docker Swarm, GlusterFS, Keepalived no Cluster Master. Implantação do Nginx e VIP da aplicação.", data: "Em execução agora...", icon: "fa-layer-group" },
-                    { titulo: "Migração e Homologação", desc: "Copy/Sync do banco Oracle, deploy das imagens contêiner Solus, validação interna de acessos.", data: "Aguardando...", icon: "fa-vial" },
-                    { titulo: "Go-Live e Handover", desc: "Mapeamento do DNS final, virada da chave em produção e entrega de credenciais backoffice.", data: "Aguardando...", icon: "fa-rocket" }
+                    { titulo: "Reunião de Kickoff", desc: "Alinhamento arquitetural, entrega do PDF de Requisitos e aprovação do cronograma Solus HA.", data: "Concluído em: 10/03/2026", icon: "fa-bullhorn" },
+                    { titulo: "Provisão de Infraestrutura", desc: "Aguardando equipe cliente realizar provisionamento de servidores (x3 VMs + Storage).", data: "Em andamento...", icon: "fa-server" },
+                    { titulo: "Setup Solus HA", desc: "Instalação do Docker Swarm, GlusterFS, Keepalived e VIP da aplicação.", data: "Aguardando infra...", icon: "fa-layer-group" },
+                    { titulo: "Migração e Homologação", desc: "Deploy de contêineres e validação de acessos pela equipe da Unimed.", data: "Aguardando", icon: "fa-vial" },
+                    { titulo: "Go-Live e Handover", desc: "Mapeamento do DNS final, virada da chave em produção.", data: "Aguardando", icon: "fa-rocket" }
                 ]
             },
-            "CLIN-8899": {
-                nome: "Clínica Saúde Avançada",
-                etapaAtual: 4, 
+            "SANTA-CASA": {
+                nome: "Santa Casa de Misericórdia",
+                etapaAtual: 3, 
                 etapas: [
-                    { titulo: "Reunião de Kickoff", desc: "Alinhamento inicial.", data: "15/02/2026", icon: "fa-bullhorn" },
-                    { titulo: "Provisão de Infraestrutura", desc: "VMs na AWS criadas.", data: "20/02/2026", icon: "fa-server" },
-                    { titulo: "Setup Solus HA", desc: "GlusterFS / VIP OK.", data: "28/02/2026", icon: "fa-layer-group" },
-                    { titulo: "Migração e Homologação", desc: "Testes validados com usuário final.", data: "10/03/2026", icon: "fa-vial" },
-                    { titulo: "Go-Live e Handover", desc: "Ambiente 100% produtivo. Entregue.", data: "Em execução agora...", icon: "fa-rocket" }
+                    { titulo: "Reunião de Kickoff", desc: "Reunião e entrega de requisitos.", data: "Concluído", icon: "fa-bullhorn" },
+                    { titulo: "Provisão de Infraestrutura", desc: "Servidores provisionados e acessos VPN liberados para a Solus.", data: "Concluído", icon: "fa-server" },
+                    { titulo: "Setup Solus HA", desc: "Cluster Docker Swarm e GlusterFS (Réplica 3x) configurados com sucesso.", data: "Concluído", icon: "fa-layer-group" },
+                    { titulo: "Migração e Homologação", desc: "Realizando sincronização do banco de dados e testes de sobrecarga.", data: "Ajustando performance...", icon: "fa-vial" },
+                    { titulo: "Go-Live e Handover", desc: "Entrega do ambiente produtivo e treinamento da equipe local.", data: "Semana que vem", icon: "fa-rocket" }
                 ]
             }
         };
