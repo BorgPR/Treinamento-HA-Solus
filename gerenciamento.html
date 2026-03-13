@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gestão Operacional de Demandas e Projetos TIP">
+    <title>Solus HA | Gestão Operacional de Demandas e Projetos TIP</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #004a99;
+            --primary-glow: rgba(0, 74, 153, 0.3);
+            --secondary: #c2185b;
+            --accent: #8e24aa;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #0ea5e9;
+
+            --bg-page: #f0f4f8;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-sidebar: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 40px -10px rgba(0,0,0,0.12);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --k-todo: rgba(148, 163, 184, 0.1);
+            --k-doing: rgba(14, 165, 233, 0.1);
+            --k-verify: rgba(245, 158, 11, 0.1);
+            --k-done: rgba(16, 185, 129, 0.1);
+        }
+
+        .dark-mode {
+            --bg-page: #020617;
+            --bg-card: rgba(15, 23, 42, 0.65);
+            --bg-sidebar: #0f172a;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --k-todo: rgba(148, 163, 184, 0.05);
+            --k-doing: rgba(14, 165, 233, 0.05);
+            --k-verify: rgba(245, 158, 11, 0.05);
+            --k-done: rgba(16, 185, 129, 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.3s, color 0.3s;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(ellipse at 10% 20%, rgba(0,74,153,0.08) 0%, transparent 50%);
+            pointer-events: none; z-index: 0;
+        }
+
+        header {
+            position: sticky; top: 0; z-index: 100; background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border); padding: 0.9rem 3rem;
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(12px);
+        }
+
+        .theme-btn { background: none; border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; cursor: pointer; color: var(--text-main); font-size: 1rem; transition: all 0.2s; }
+        .theme-btn:hover { background: var(--bg-page); }
+        .btn-back { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; padding: 8px 16px; border-radius: 8px; background: rgba(0,0,0,0.03); transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-back:hover { background: var(--border); color: var(--text-main); }
+
+        .glass { background: var(--glass-bg); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: var(--shadow); }
+
+        /* --- DASHBOARD E CONTROLES --- */
+        main { padding: 2rem 3rem; max-width: 1600px; margin: 0 auto; width: 100%; position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column;}
+        
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .toolbar-title { display: flex; align-items: center; gap: 12px; }
+        .toolbar-title h1 { font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+        .toolbar-title i { font-size: 1.8rem; color: var(--primary); }
+
+        .view-toggles { display: flex; gap: 8px; background: var(--bg-sidebar); border: 1px solid var(--border); padding: 6px; border-radius: 12px; }
+        .btn-toggle { background: transparent; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; font-family: 'Outfit'; }
+        .btn-toggle.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0, 74, 153, 0.2); }
+        .btn-toggle:hover:not(.active) { background: rgba(0,0,0,0.05); }
+
+        /* --- VISTA: KANBAN BOARD --- */
+        .kanban-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; flex: 1; }
+        .kanban-col { display: flex; flex-direction: column; gap: 1rem; border-radius: 24px; padding: 1.2rem; border: 1px solid var(--glass-border); }
+        
+        .k-todo { background: var(--k-todo); border-top: 4px solid var(--text-muted); }
+        .k-doing { background: var(--k-doing); border-top: 4px solid var(--info); }
+        .k-verify { background: var(--k-verify); border-top: 4px solid var(--warning); }
+        .k-done { background: var(--k-done); border-top: 4px solid var(--success); }
+
+        .k-header { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-main); }
+        .k-count { background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; }
+
+        .task-card { background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+        .task-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px -10px rgba(0,0,0,0.15); border-color: var(--primary); }
+        
+        .t-id { font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--primary); background: rgba(0, 74, 153, 0.1); padding: 3px 8px; border-radius: 6px; font-weight: 700; }
+        .t-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
+        .t-title { font-weight: 800; font-size: 1.05rem; line-height: 1.3; margin-bottom: 8px; color: var(--text-main); }
+        .t-client { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+        
+        .t-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 12px; border-top: 1px dashed var(--border); }
+        .t-tag { background: rgba(0,0,0,0.04); font-size: 0.7rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; color: var(--text-muted); }
+        
+        .prio-Urgente { color: var(--danger); }
+        .prio-Alta { color: var(--warning); }
+        .prio-Média { color: var(--info); }
+        .prio-Baixa { color: var(--success); }
+
+        /* --- VISTA: LISTA (TABLE) --- */
+        .list-view { display: none; background: var(--glass-bg); backdrop-filter: blur(16px); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
+        .tip-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .tip-table th { background: rgba(0,0,0,0.03); padding: 16px 20px; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border); }
+        .tip-table td { padding: 16px 20px; border-bottom: 1px solid var(--border); color: var(--text-main); font-weight: 500; font-size: 0.95rem; vertical-align: middle; }
+        .tip-table tr:last-child td { border-bottom: none; }
+        .tip-table tr:hover { background: rgba(0, 74, 153, 0.02); }
+        .dark-mode .tip-table th { background: rgba(255,255,255,0.02); }
+        .dark-mode .tip-table tr:hover { background: rgba(255,255,255,0.02); }
+        
+        .lbl-status { padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; display: inline-block; }
+        .lbl-pendente { background: rgba(148, 163, 184, 0.15); color: var(--text-muted); }
+        .lbl-execucao { background: rgba(14, 165, 233, 0.15); color: var(--info); }
+        .lbl-homologacao { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .lbl-concluido { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+
+    </style>
+</head>
+<body id="app-body">
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="window.location.href='index.html'">
+            <svg width="210" height="40" viewBox="0 8 280 40" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
+              <path d="M 10 15 L 15 15 L 15 33 L 10 33 A 9 9 0 0 1 10 15 Z" fill="#0157c8" />
+              <path d="M 33 15 L 38 15 A 9 9 0 0 1 38 33 L 33 33 Z" fill="#e11c5f" />
+              <path d="M 15 10 A 9 9 0 0 1 33 10 L 33 15 L 15 15 Z" fill="#e11c5f" />
+              <path d="M 15 33 L 33 33 L 33 38 A 9 9 0 0 1 15 38 Z" fill="#00439c" />
+              <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
+              <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
+              <text x="50" y="34" font-family="'Outfit', 'Arial', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
+              <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
+            </svg>
+        </div>
+        
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left-long"></i> Portal</a>
+            <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
+        </div>
+    </header>
+
+    <main>
+        <!-- TOPO / CONTROLES -->
+        <div class="toolbar">
+            <div class="toolbar-title">
+                <i class="fa-duotone fa-solid fa-chart-network"></i>
+                <h1>Gestão de Operações (TIP)</h1>
+            </div>
+            
+            <div class="view-toggles">
+                <button class="btn-toggle active" id="btn-kanban" onclick="switchView('kanban')">
+                    <i class="fa-solid fa-table-columns"></i> Kanban (Fluxo)
+                </button>
+                <button class="btn-toggle" id="btn-lista" onclick="switchView('lista')">
+                    <i class="fa-solid fa-list-check"></i> Modo Lista (Detalhes)
+                </button>
+            </div>
+        </div>
+
+        <!-- VISAO 1: KANBAN BOARD -->
+        <div class="kanban-board" id="view-kanban">
+            
+            <div class="kanban-col k-todo">
+                <div class="k-header">
+                    <span>A Fazer (Backlog)</span>
+                    <span class="k-count" id="count-pendente">0</span>
+                </div>
+                <div id="col-pendente"></div> <!-- Injetado -->
+            </div>
+
+            <div class="kanban-col k-doing">
+                <div class="k-header">
+                    <span>Em Execução / Setup</span>
+                    <span class="k-count" id="count-execucao">0</span>
+                </div>
+                <div id="col-execucao"></div> <!-- Injetado -->
+            </div>
+
+            <div class="kanban-col k-verify">
+                <div class="k-header">
+                    <span>Homologação / Valid.</span>
+                    <span class="k-count" id="count-homologacao">0</span>
+                </div>
+                <div id="col-homologacao"></div> <!-- Injetado -->
+            </div>
+
+            <div class="kanban-col k-done">
+                <div class="k-header">
+                    <span>Concluído (Go Live)</span>
+                    <span class="k-count" id="count-concluido">0</span>
+                </div>
+                <div id="col-concluido"></div> <!-- Injetado -->
+            </div>
+
+        </div>
+
+        <!-- VISAO 2: MODO LISTA (TABELA) -->
+        <div class="list-view" id="view-lista">
+            <div style="overflow-x: auto;">
+                <table class="tip-table">
+                    <thead>
+                        <tr>
+                            <th width="80">ID</th>
+                            <th>Demanda / Tarefa</th>
+                            <th>Cliente / Local</th>
+                            <th>Tag / Módulo</th>
+                            <th>Prioridade / Prazo</th>
+                            <th align="center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Injetado -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- CARREGA O "BANCO DE DADOS" EXTERNO DA TIP -->
+    <script src="dados-demandas.js"></script>
+
+    <script>
+        // --- THEME PERSISTENCE ---
+        (function() {
+            if (localStorage.getItem('solus-theme') === 'dark') {
+                document.getElementById('app-body').classList.add('dark-mode');
+                var btn = document.getElementById('theme-toggle');
+                if (btn) btn.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        })();
+
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            var body = document.getElementById('app-body');
+            body.classList.toggle('dark-mode');
+            var isDark = body.classList.contains('dark-mode');
+            this.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
+        });
+
+        // --- SISTEMA DE VISUALIZAÇÃO ---
+        function switchView(view) {
+            document.getElementById('view-kanban').style.display = view === 'kanban' ? 'grid' : 'none';
+            document.getElementById('view-lista').style.display = view === 'lista' ? 'block' : 'none';
+            
+            document.getElementById('btn-kanban').className = view === 'kanban' ? 'btn-toggle active' : 'btn-toggle';
+            document.getElementById('btn-lista').className = view === 'lista' ? 'btn-toggle active' : 'btn-toggle';
+        }
+
+        function getPrioIcon(p) {
+            if (p === 'Urgente') return '<i class="fa-solid fa-triangle-exclamation"></i>';
+            if (p === 'Alta') return '<i class="fa-solid fa-angles-up"></i>';
+            if (p === 'Média') return '<i class="fa-solid fa-minus"></i>';
+            return '<i class="fa-solid fa-angles-down"></i>';
+        }
+
+        function formatStatusTxt(s) {
+            if(s==='pendente') return 'Pendente';
+            if(s==='execucao') return 'Em Setup';
+            if(s==='homologacao') return 'Validando';
+            if(s==='concluido') return 'Entregue';
+            return s;
+        }
+
+        // --- RENDERIZA O KANBAN E A LISTA AO CARREGAR A PÁGINA ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const cols = {
+                pendente: document.getElementById('col-pendente'),
+                execucao: document.getElementById('col-execucao'),
+                homologacao: document.getElementById('col-homologacao'),
+                concluido: document.getElementById('col-concluido')
+            };
+
+            const counts = { pendente: 0, execucao: 0, homologacao: 0, concluido: 0 };
+            const tableBody = document.getElementById('table-body');
+
+            // Limpa tudo (segurança)
+            for (let c in cols) cols[c].innerHTML = '';
+            tableBody.innerHTML = '';
+
+            // Pra cada demanda gravada em dados-demandas.js
+            minhasDemandas.forEach(d => {
+                const statusStr = d.status || 'pendente';
+                
+                // 1. INJETA NO KANBAN
+                if (cols[statusStr]) {
+                    counts[statusStr]++;
+                    const card = document.createElement('div');
+                    card.className = "task-card";
+                    card.innerHTML = `
+                        <div class="t-header">
+                            <span class="t-id">${d.id}</span>
+                            <span class="prio-${d.prioridade}" title="${d.prioridade}">${getPrioIcon(d.prioridade)}</span>
+                        </div>
+                        <div class="t-title">${d.titulo}</div>
+                        <div class="t-client"><i class="fa-solid fa-hospital"></i> ${d.cliente}</div>
+                        <div class="t-footer">
+                            <span class="t-tag">${d.tags}</span>
+                            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${d.prazo}</span>
+                        </div>
+                    `;
+                    cols[statusStr].appendChild(card);
+                    // Margem top padrao js dinamico
+                    card.style.marginBottom = '1rem';
+                }
+
+                // 2. INJETA NO MODO LISTA
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="font-family: 'JetBrains Mono'; font-size: 0.8rem; font-weight: 700;">${d.id}</td>
+                    <td style="font-weight: 800;">${d.titulo}</td>
+                    <td><i class="fa-solid fa-hospital" style="color: var(--text-muted); margin-right: 5px;"></i> ${d.cliente}</td>
+                    <td><span class="t-tag">${d.tags}</span></td>
+                    <td>
+                        <div style="font-weight: 700; margin-bottom: 3px;" class="prio-${d.prioridade}">${getPrioIcon(d.prioridade)} ${d.prioridade}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${d.prazo}</div>
+                    </td>
+                    <td align="center">
+                        <span class="lbl-status lbl-${statusStr}">${formatStatusTxt(statusStr)}</span>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // Atualiza os contadores no Kanban
+            document.getElementById('count-pendente').textContent = counts.pendente;
+            document.getElementById('count-execucao').textContent = counts.execucao;
+            document.getElementById('count-homologacao').textContent = counts.homologacao;
+            document.getElementById('count-concluido').textContent = counts.concluido;
+        });
+    </script>
+</body>
+</html>
