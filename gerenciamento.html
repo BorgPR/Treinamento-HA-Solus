@@ -93,15 +93,21 @@
         .toolbar-title h1 { font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
         .toolbar-title i { font-size: 1.8rem; color: var(--primary); }
 
-        .view-toggles { display: flex; gap: 8px; background: var(--bg-sidebar); border: 1px solid var(--border); padding: 6px; border-radius: 12px; }
+        .view-toggles { display: flex; gap: 8px; background: var(--bg-sidebar); border: 1px solid var(--border); padding: 6px; border-radius: 12px; align-items: center;}
+        
+        .btn-add { background: var(--success); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; color: white; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; font-family: 'Outfit'; margin-right: 15px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2); }
+        .btn-add:hover { background: #059669; transform: translateY(-2px); }
+
         .btn-toggle { background: transparent; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; font-family: 'Outfit'; }
         .btn-toggle.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0, 74, 153, 0.2); }
         .btn-toggle:hover:not(.active) { background: rgba(0,0,0,0.05); }
 
-        /* --- VISTA: KANBAN BOARD --- */
-        .kanban-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; flex: 1; }
-        .kanban-col { display: flex; flex-direction: column; gap: 1rem; border-radius: 24px; padding: 1.2rem; border: 1px solid var(--glass-border); }
+        /* --- VISTA: KANBAN BOARD & DRAG/DROP --- */
+        .kanban-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; flex: 1; align-items: start;}
+        .kanban-col { display: flex; flex-direction: column; gap: 1rem; border-radius: 24px; padding: 1.2rem; border: 2px solid var(--glass-border); transition: all 0.2s; min-height: 50vh;}
         
+        .kanban-col.drag-over { background: rgba(0, 74, 153, 0.05); border: 2px dashed var(--primary); }
+
         .k-todo { background: var(--k-todo); border-top: 4px solid var(--text-muted); }
         .k-doing { background: var(--k-doing); border-top: 4px solid var(--info); }
         .k-verify { background: var(--k-verify); border-top: 4px solid var(--warning); }
@@ -110,11 +116,19 @@
         .k-header { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-main); }
         .k-count { background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; }
 
-        .task-card { background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem; cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; }
+        .task-list { display: flex; flex-direction: column; gap: 1rem; flex: 1; }
+
+        .task-card { background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem; cursor: grab; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; position: relative; }
         .task-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px -10px rgba(0,0,0,0.15); border-color: var(--primary); }
+        .task-card.dragging { opacity: 0.5; transform: scale(0.95); cursor: grabbing; border-color: var(--primary); }
         
         .t-id { font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--primary); background: rgba(0, 74, 153, 0.1); padding: 3px 8px; border-radius: 6px; font-weight: 700; }
         .t-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
+        
+        .btn-delete { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; opacity: 0; transition: all 0.2s; }
+        .task-card:hover .btn-delete { opacity: 1; }
+        .btn-delete:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+
         .t-title { font-weight: 800; font-size: 1.05rem; line-height: 1.3; margin-bottom: 8px; color: var(--text-main); }
         .t-client { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
         
@@ -136,11 +150,27 @@
         .dark-mode .tip-table th { background: rgba(255,255,255,0.02); }
         .dark-mode .tip-table tr:hover { background: rgba(255,255,255,0.02); }
         
-        .lbl-status { padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; display: inline-block; }
+        .lbl-status { padding: 6px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; display: inline-block; cursor: pointer; transition: all 0.2s;}
         .lbl-pendente { background: rgba(148, 163, 184, 0.15); color: var(--text-muted); }
         .lbl-execucao { background: rgba(14, 165, 233, 0.15); color: var(--info); }
         .lbl-homologacao { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
         .lbl-concluido { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        
+        .td-actions .btn-delete { opacity: 1; }
+
+        /* --- MODAL ADICIONAR TAREFA --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-header h2 { font-size: 1.5rem; font-weight: 800; }
+        .btn-close { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 700; font-size: 0.85rem; color: var(--text-main);}
+        .form-control { width: 100%; padding: 10px 15px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-page); color: var(--text-main); font-family: inherit; font-size: 0.95rem; outline: none;}
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; width: 100%; margin-top: 10px; font-size: 1rem; }
+        .btn-primary:hover { background: #003b7a; }
 
     </style>
 </head>
@@ -175,11 +205,17 @@
             </div>
             
             <div class="view-toggles">
+                <button class="btn-add" onclick="openModal()">
+                    <i class="fa-solid fa-plus"></i> Nova Demanda
+                </button>
                 <button class="btn-toggle active" id="btn-kanban" onclick="switchView('kanban')">
                     <i class="fa-solid fa-table-columns"></i> Kanban (Fluxo)
                 </button>
                 <button class="btn-toggle" id="btn-lista" onclick="switchView('lista')">
                     <i class="fa-solid fa-list-check"></i> Modo Lista (Detalhes)
+                </button>
+                <button class="btn-toggle" onclick="resetBoard()" title="Restaurar de fábrica">
+                    <i class="fa-solid fa-rotate-right"></i>
                 </button>
             </div>
         </div>
@@ -187,36 +223,36 @@
         <!-- VISAO 1: KANBAN BOARD -->
         <div class="kanban-board" id="view-kanban">
             
-            <div class="kanban-col k-todo">
+            <div class="kanban-col k-todo" id="col-pendente" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'pendente')">
                 <div class="k-header">
                     <span>A Fazer (Backlog)</span>
                     <span class="k-count" id="count-pendente">0</span>
                 </div>
-                <div id="col-pendente"></div> <!-- Injetado -->
+                <div class="task-list" id="list-pendente"></div>
             </div>
 
-            <div class="kanban-col k-doing">
+            <div class="kanban-col k-doing" id="col-execucao" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'execucao')">
                 <div class="k-header">
                     <span>Em Execução / Setup</span>
                     <span class="k-count" id="count-execucao">0</span>
                 </div>
-                <div id="col-execucao"></div> <!-- Injetado -->
+                <div class="task-list" id="list-execucao"></div>
             </div>
 
-            <div class="kanban-col k-verify">
+            <div class="kanban-col k-verify" id="col-homologacao" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'homologacao')">
                 <div class="k-header">
                     <span>Homologação / Valid.</span>
                     <span class="k-count" id="count-homologacao">0</span>
                 </div>
-                <div id="col-homologacao"></div> <!-- Injetado -->
+                <div class="task-list" id="list-homologacao"></div>
             </div>
 
-            <div class="kanban-col k-done">
+            <div class="kanban-col k-done" id="col-concluido" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'concluido')">
                 <div class="k-header">
                     <span>Concluído (Go Live)</span>
                     <span class="k-count" id="count-concluido">0</span>
                 </div>
-                <div id="col-concluido"></div> <!-- Injetado -->
+                <div class="task-list" id="list-concluido"></div>
             </div>
 
         </div>
@@ -233,6 +269,7 @@
                             <th>Tag / Módulo</th>
                             <th>Prioridade / Prazo</th>
                             <th align="center">Status</th>
+                            <th width="50">Ação</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
@@ -243,8 +280,46 @@
         </div>
     </main>
 
-    <!-- CARREGA O "BANCO DE DADOS" EXTERNO DA TIP -->
-    <script src="dados-demandas.js"></script>
+    <!-- MODAL NOVA TAREFA -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Nova Demanda</h2>
+                <button class="btn-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="taskForm" onsubmit="saveNewTask(event)">
+                <div class="form-group">
+                    <label>Título da Tarefa</label>
+                    <input type="text" id="t-titulo" class="form-control" required placeholder="Ex: Deploy de Contêineres Nginx">
+                </div>
+                <div class="form-group">
+                    <label>Cliente / Hospedeiro</label>
+                    <input type="text" id="t-cliente" class="form-control" required placeholder="Ex: Hospital Santa Catarina">
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Prioridade</label>
+                        <select id="t-prioridade" class="form-control">
+                            <option value="Baixa">Baixa</option>
+                            <option value="Média" selected>Média</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Urgente">Urgente</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Prazo</label>
+                        <input type="text" id="t-prazo" class="form-control" placeholder="Ex: 20/03 ou 'Hoje'">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Etiquetas (Tags)</label>
+                    <input type="text" id="t-tags" class="form-control" placeholder="Ex: DBA, Redes, Firewall">
+                </div>
+                <button type="submit" class="btn-primary">Criar Tarefa</button>
+            </form>
+        </div>
+    </div>
+
 
     <script>
         // --- THEME PERSISTENCE ---
@@ -264,11 +339,10 @@
             localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
         });
 
-        // --- SISTEMA DE VISUALIZAÇÃO ---
+        // --- SISTEMA DE VISUALIZAÇÃO (TABS) ---
         function switchView(view) {
             document.getElementById('view-kanban').style.display = view === 'kanban' ? 'grid' : 'none';
             document.getElementById('view-lista').style.display = view === 'lista' ? 'block' : 'none';
-            
             document.getElementById('btn-kanban').className = view === 'kanban' ? 'btn-toggle active' : 'btn-toggle';
             document.getElementById('btn-lista').className = view === 'lista' ? 'btn-toggle active' : 'btn-toggle';
         }
@@ -288,35 +362,175 @@
             return s;
         }
 
-        // --- RENDERIZA O KANBAN E A LISTA AO CARREGAR A PÁGINA ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const cols = {
-                pendente: document.getElementById('col-pendente'),
-                execucao: document.getElementById('col-execucao'),
-                homologacao: document.getElementById('col-homologacao'),
-                concluido: document.getElementById('col-concluido')
+        // --- SISTEMA DE DADOS (LOCALSTORAGE) ---
+        let tasks = [];
+
+        // Seed inicial caso esteja vazio
+        const defaultTasks = [
+            { id: "TIP-101", titulo: "Provisão de Cluster Docker", cliente: "Hospital Default", status: "pendente", prioridade: "Alta", prazo: "15/03/2026", tags: "Infra" },
+            { id: "TIP-102", titulo: "Cópia do Banco Oracle", cliente: "Clínica Vida", status: "execucao", prioridade: "Urgente", prazo: "Hoje", tags: "DBA" }
+        ];
+
+        function loadTasks() {
+            const saved = localStorage.getItem('solus-tip-tasks');
+            if (saved) {
+                tasks = JSON.parse(saved);
+            } else {
+                tasks = [...defaultTasks];
+                saveTasks();
+            }
+            renderBoard();
+        }
+
+        function saveTasks() {
+            localStorage.setItem('solus-tip-tasks', JSON.stringify(tasks));
+        }
+
+        function resetBoard() {
+            if(confirm("Deseja apagar todas as tarefas e voltar aos exemplos de fábrica?")) {
+                tasks = [...defaultTasks];
+                saveTasks();
+                renderBoard();
+            }
+        }
+
+        function deleteTask(id) {
+            if(confirm("Confirmar a exclusão desta tarefa?")) {
+                tasks = tasks.filter(t => t.id !== id);
+                saveTasks();
+                renderBoard();
+            }
+        }
+
+        // --- SISTEMA DRAG & DROP HTML5 ---
+        let draggedTaskId = null;
+
+        function dragStart(e, id) {
+            draggedTaskId = id;
+            e.dataTransfer.effectAllowed = 'move';
+            e.target.classList.add('dragging');
+            
+            // Corrige bug do drag image no html5 preview
+            setTimeout(() => e.target.style.display = 'none', 0);
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('dragging');
+            e.target.style.display = 'block';
+            draggedTaskId = null;
+            
+            // limpa as bordas de todas as colunas
+            document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+        }
+
+        function allowDrop(e) {
+            e.preventDefault(); 
+        }
+
+        function dragEnter(e) {
+            e.preventDefault();
+            const col = e.target.closest('.kanban-col');
+            if(col) col.classList.add('drag-over');
+        }
+
+        function dragLeave(e) {
+            const col = e.target.closest('.kanban-col');
+            // Só remove se estivermos realmente saindo da coluna
+            if(col && !col.contains(e.relatedTarget)) {
+                col.classList.remove('drag-over');
+            }
+        }
+
+        function drop(e, newStatus) {
+            e.preventDefault();
+            const col = e.target.closest('.kanban-col');
+            if(col) col.classList.remove('drag-over');
+
+            if (draggedTaskId) {
+                // Encontra a tarefa e atualiza o status
+                const taskIndex = tasks.findIndex(t => t.id === draggedTaskId);
+                if (taskIndex > -1) {
+                    tasks[taskIndex].status = newStatus;
+                    saveTasks();
+                    renderBoard(); // Re-renderiza tudo para aplicar nas duas visões
+                }
+            }
+        }
+
+        // Permitir mudança de status rápido pela tabela
+        function cycleStatus(id, currentStatus) {
+            const flow = ['pendente', 'execucao', 'homologacao', 'concluido'];
+            let nextIndex = flow.indexOf(currentStatus) + 1;
+            if (nextIndex >= flow.length) nextIndex = 0;
+            
+            const taskIndex = tasks.findIndex(t => t.id === id);
+            if (taskIndex > -1) {
+                tasks[taskIndex].status = flow[nextIndex];
+                saveTasks();
+                renderBoard();
+            }
+        }
+
+        // --- MODAL & FORMULARIO ---
+        function openModal() { document.getElementById('taskModal').classList.add('active'); }
+        function closeModal() { document.getElementById('taskModal').classList.remove('active'); document.getElementById('taskForm').reset(); }
+
+        function saveNewTask(e) {
+            e.preventDefault();
+            // Gera um ID aleatório tipo TIP-459
+            const newId = "TIP-" + Math.floor(100 + Math.random() * 900);
+            
+            const newTask = {
+                id: newId,
+                titulo: document.getElementById('t-titulo').value,
+                cliente: document.getElementById('t-cliente').value,
+                status: 'pendente', // Sempre cai em Backlog
+                prioridade: document.getElementById('t-prioridade').value,
+                prazo: document.getElementById('t-prazo').value || "A definir",
+                tags: document.getElementById('t-tags').value || "Geral"
+            };
+
+            tasks.push(newTask);
+            saveTasks();
+            closeModal();
+            renderBoard();
+        }
+
+        // --- RENDERIZADOR MASTER ---
+        function renderBoard() {
+            const lists = {
+                pendente: document.getElementById('list-pendente'),
+                execucao: document.getElementById('list-execucao'),
+                homologacao: document.getElementById('list-homologacao'),
+                concluido: document.getElementById('list-concluido')
             };
 
             const counts = { pendente: 0, execucao: 0, homologacao: 0, concluido: 0 };
             const tableBody = document.getElementById('table-body');
 
-            // Limpa tudo (segurança)
-            for (let c in cols) cols[c].innerHTML = '';
+            // Limpa tudo
+            for (let l in lists) lists[l].innerHTML = '';
             tableBody.innerHTML = '';
 
-            // Pra cada demanda gravada em dados-demandas.js
-            minhasDemandas.forEach(d => {
+            tasks.forEach(d => {
                 const statusStr = d.status || 'pendente';
                 
                 // 1. INJETA NO KANBAN
-                if (cols[statusStr]) {
+                if (lists[statusStr]) {
                     counts[statusStr]++;
                     const card = document.createElement('div');
                     card.className = "task-card";
+                    card.setAttribute('draggable', 'true');
+                    card.ondragstart = (e) => dragStart(e, d.id);
+                    card.ondragend = dragEnd;
+
                     card.innerHTML = `
                         <div class="t-header">
-                            <span class="t-id">${d.id}</span>
-                            <span class="prio-${d.prioridade}" title="${d.prioridade}">${getPrioIcon(d.prioridade)}</span>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <span class="t-id">${d.id}</span>
+                                <span class="prio-${d.prioridade}" title="${d.prioridade}">${getPrioIcon(d.prioridade)}</span>
+                            </div>
+                            <button class="btn-delete" onclick="deleteTask('${d.id}')" title="Excluir"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                         <div class="t-title">${d.titulo}</div>
                         <div class="t-client"><i class="fa-solid fa-hospital"></i> ${d.cliente}</div>
@@ -325,9 +539,7 @@
                             <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${d.prazo}</span>
                         </div>
                     `;
-                    cols[statusStr].appendChild(card);
-                    // Margem top padrao js dinamico
-                    card.style.marginBottom = '1rem';
+                    lists[statusStr].appendChild(card);
                 }
 
                 // 2. INJETA NO MODO LISTA
@@ -342,18 +554,27 @@
                         <div style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${d.prazo}</div>
                     </td>
                     <td align="center">
-                        <span class="lbl-status lbl-${statusStr}">${formatStatusTxt(statusStr)}</span>
+                        <span class="lbl-status lbl-${statusStr}" title="Clique para avançar status" onclick="cycleStatus('${d.id}', '${statusStr}')">
+                            ${formatStatusTxt(statusStr)} <i class="fa-solid fa-arrow-right-arrow-left" style="font-size: 0.6rem; margin-left:3px; opacity: 0.5;"></i>
+                        </span>
+                    </td>
+                    <td align="center" class="td-actions">
+                        <button class="btn-delete" onclick="deleteTask('${d.id}')" title="Excluir"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 `;
                 tableBody.appendChild(tr);
             });
 
-            // Atualiza os contadores no Kanban
+            // Atualiza marcadores
             document.getElementById('count-pendente').textContent = counts.pendente;
             document.getElementById('count-execucao').textContent = counts.execucao;
             document.getElementById('count-homologacao').textContent = counts.homologacao;
             document.getElementById('count-concluido').textContent = counts.concluido;
-        });
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', loadTasks);
+
     </script>
 </body>
 </html>
