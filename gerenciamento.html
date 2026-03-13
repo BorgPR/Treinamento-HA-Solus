@@ -156,6 +156,21 @@
         .lbl-homologacao { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
         .lbl-concluido { background: rgba(16, 185, 129, 0.15); color: var(--success); }
         
+        /* --- VISTA: CRONOGRAMAS (CLIENTES) --- */
+        .cron-view { display: none; }
+        .cron-card { background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; margin-bottom: 2rem; }
+        .cron-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 1.5rem; }
+        .project-item { background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; position: relative; }
+        .project-item:hover { border-color: var(--accent); }
+        .project-token { font-family: 'JetBrains Mono'; font-weight: 700; color: var(--accent); margin-bottom: 5px; display: block; }
+        .project-name { font-size: 1.2rem; font-weight: 800; margin-bottom: 10px; }
+        .project-steps { font-size: 0.85rem; color: var(--text-muted); }
+        
+        .export-box { background: var(--accent); color: white; padding: 2rem; border-radius: 20px; margin-top: 2rem; text-align: center; }
+        .btn-export { background: white; color: var(--accent); border: none; padding: 12px 25px; border-radius: 10px; font-weight: 800; cursor: pointer; margin-top: 1rem; display: inline-flex; align-items: center; gap: 10px; transition: all 0.2s; }
+        .btn-export:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+        
         .td-actions .btn-delete { opacity: 1; }
 
         /* --- MODAL ADICIONAR TAREFA --- */
@@ -214,6 +229,10 @@
                 <button class="btn-toggle" id="btn-lista" onclick="switchView('lista')">
                     <i class="fa-solid fa-list-check"></i> Modo Lista (Detalhes)
                 </button>
+                <button class="btn-toggle" id="btn-cron" onclick="switchView('cron')">
+                    <i class="fa-solid fa-timeline"></i> Cronogramas Clientes
+                </button>
+
                 <button class="btn-toggle" onclick="resetBoard()" title="Restaurar de fábrica">
                     <i class="fa-solid fa-rotate-right"></i>
                 </button>
@@ -278,7 +297,36 @@
                 </table>
             </div>
         </div>
+        </div>
+
+        <!-- VISAO 3: CRONOGRAMAS CLIENTES -->
+        <div class="cron-view" id="view-cron">
+            <div class="cron-card glass">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div>
+                        <h2 style="font-weight: 800; color: var(--accent);"><i class="fa-solid fa-users-gear"></i> Gerenciador de Cronogramas</h2>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Crie e edite o que seus clientes vêem na área logada (Timeline do Projeto).</p>
+                    </div>
+                    <button class="btn-primary" style="background: var(--accent); width: auto;" onclick="openCronModal()">
+                        <i class="fa-solid fa-plus"></i> Novo Cliente / Projeto
+                    </button>
+                </div>
+
+                <div class="cron-grid" id="cron-projects-list">
+                    <!-- Injetado via JS -->
+                </div>
+
+                <div class="export-box">
+                    <h3 style="font-weight: 800;">🚀 Publicar Alterações</h3>
+                    <p style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">Após editar os projetos acima, clique no botão abaixo para gerar o arquivo de sincronização.</p>
+                    <button class="btn-export" onclick="exportCronJS()">
+                        <i class="fa-solid fa-file-export"></i> Gerar Arquivo de Sincronização
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
+
 
     <!-- MODAL NOVA TAREFA -->
     <div class="modal-overlay" id="taskModal">
@@ -320,6 +368,52 @@
         </div>
     </div>
 
+    <!-- MODAL NOVO CRONOGRAMA -->
+    <div class="modal-overlay" id="cronModal">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <h2 style="color: var(--accent);">Novo Projeto de Cliente</h2>
+                <button class="btn-close" onclick="closeCronModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="cronForm" onsubmit="saveClientProject(event)">
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Token de Acesso (Ex: UNIMED-01)</label>
+                        <input type="text" id="c-token" class="form-control" required placeholder="Código que o cliente usará">
+                    </div>
+                    <div class="form-group" style="flex: 2;">
+                        <label>Nome do Cliente / Hospital</label>
+                        <input type="text" id="c-nome" class="form-control" required placeholder="Nome completo do cliente">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Fase Atual (0 a 4)</label>
+                    <select id="c-etapa" class="form-control">
+                        <option value="0">0 - Kickoff (Início)</option>
+                        <option value="1">1 - Provisão de Infra</option>
+                        <option value="2">2 - Setup Solus HA</option>
+                        <option value="3">3 - Homologação</option>
+                        <option value="4">4 - Go-Live (Entregue)</option>
+                    </select>
+                </div>
+
+                <p style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">Datas e Status da Etapas</p>
+                <div id="etapas-fields">
+                    <!-- Gerado dinamicamente -->
+                    <div style="background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid var(--accent);">
+                        <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+                            <input type="text" class="form-control fase-data" placeholder="Data/Status etapa atual (ex: Concluído ou Prev: 20/03)" style="flex: 1;">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="background: var(--accent);">Salvar Projeto de Cliente</button>
+            </form>
+        </div>
+    </div>
+
+
 
     <script>
         // --- THEME PERSISTENCE ---
@@ -343,8 +437,13 @@
         function switchView(view) {
             document.getElementById('view-kanban').style.display = view === 'kanban' ? 'grid' : 'none';
             document.getElementById('view-lista').style.display = view === 'lista' ? 'block' : 'none';
+            document.getElementById('view-cron').style.display = view === 'cron' ? 'block' : 'none';
+            
             document.getElementById('btn-kanban').className = view === 'kanban' ? 'btn-toggle active' : 'btn-toggle';
             document.getElementById('btn-lista').className = view === 'lista' ? 'btn-toggle active' : 'btn-toggle';
+            document.getElementById('btn-cron').className = view === 'cron' ? 'btn-toggle active' : 'btn-toggle';
+
+            if(view === 'cron') renderCronList();
         }
 
         function getPrioIcon(p) {
@@ -496,6 +595,127 @@
             renderBoard();
         }
 
+        // --- SISTEMA DE CRONOGRAMAS (CLIENTES) ---
+        let clientProjects = {};
+
+        function loadClientProjects() {
+            const saved = localStorage.getItem('solus-client-projects');
+            if (saved) {
+                clientProjects = JSON.parse(saved);
+            } else {
+                // Seed inicial basado em dados-projetos.js
+                clientProjects = {
+                    "UNIMED-BELEM": { nome: "Unimed Belém", etapaAtual: 1, datas: ["Concluído", "Sendo feito agora...", "Aguardando infra", "Aguardando", "Aguardando"] },
+                    "SANTA-CASA": { nome: "Santa Casa de Misericórdia", etapaAtual: 3, datas: ["Concluído", "Concluído", "Concluído", "Equipe atuando...", "Previsto: Próx semana"] }
+                };
+                saveClientProjects();
+            }
+        }
+
+        function saveClientProjects() { localStorage.setItem('solus-client-projects', JSON.stringify(clientProjects)); }
+
+        function openCronModal() { document.getElementById('cronModal').classList.add('active'); }
+        function closeCronModal() { document.getElementById('cronModal').classList.remove('active'); document.getElementById('cronForm').reset(); }
+
+        function saveClientProject(e) {
+            e.preventDefault();
+            const token = document.getElementById('c-token').value.trim().toUpperCase();
+            const nome = document.getElementById('c-nome').value;
+            const etapa = parseInt(document.getElementById('c-etapa').value);
+            
+            // Pega as datas (no momento simplificado para pegar do input)
+            const dataInput = document.querySelector('.fase-data').value;
+            
+            const p = {
+                nome: nome,
+                etapaAtual: etapa,
+                datas: ["Concluído", "Concluído", "Concluído", "Concluído", "Concluído"] // Default
+            };
+            
+            // Ajusta as datas baseado na etapa atual (lógica simples)
+            for(let i=0; i<5; i++) {
+                if(i < etapa) p.datas[i] = "Concluído";
+                else if(i === etapa) p.datas[i] = dataInput || "Em andamento...";
+                else p.datas[i] = "Aguardando...";
+            }
+
+            clientProjects[token] = p;
+            saveClientProjects();
+            closeCronModal();
+            renderCronList();
+        }
+
+        function deleteProject(token) {
+            if(confirm(`Excluir projeto do cliente ${token}?`)) {
+                delete clientProjects[token];
+                saveClientProjects();
+                renderCronList();
+            }
+        }
+
+        function renderCronList() {
+            const list = document.getElementById('cron-projects-list');
+            list.innerHTML = '';
+            
+            for (let token in clientProjects) {
+                const p = clientProjects[token];
+                const card = document.createElement('div');
+                card.className = 'project-item';
+                card.innerHTML = `
+                    <span class="project-token">${token}</span>
+                    <div class="project-name">${p.nome}</div>
+                    <div class="project-steps">
+                        Fase Atual: <strong>${p.etapaAtual}</strong> &bull; Status: ${p.datas[p.etapaAtual]}
+                    </div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button class="btn-delete" onclick="deleteProject('${token}')" title="Excluir"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                `;
+                list.appendChild(card);
+            }
+        }
+
+        function exportCronJS() {
+            let content = `// ====================================\n// GERADO AUTOMATICAMENTE VIA PAINEL TIP\n// ====================================\n\nconst dbProjetos = {\n`;
+            
+            const etapaMeta = [
+                { t: "Reunião de Kickoff", d: "Alinhamento arquitetural e aprovação do projeto Solus HA.", i: "fa-bullhorn" },
+                { t: "Provisão de Infra", d: "Aguardando equipe cliente liberar VMs NVMe e IPs.", i: "fa-server" },
+                { t: "Setup Solus HA", d: "Instalação do GlusterFS, Keepalived e VIP da aplicação.", i: "fa-layer-group" },
+                { t: "Homologação", d: "Deploy de contêineres e validação de acessos pela equipe da Unimed.", i: "fa-vial" },
+                { t: "Go-Live", d: "Mapeamento do DNS final, virada da chave em produção.", i: "fa-rocket" }
+            ];
+
+            for (let token in clientProjects) {
+                const p = clientProjects[token];
+                content += `    "${token}": {\n`;
+                content += `        nome: "${p.nome}",\n`;
+                content += `        etapaAtual: ${p.etapaAtual},\n`;
+                content += `        etapas: [\n`;
+                
+                etapaMeta.forEach((m, idx) => {
+                    content += `            { titulo: "${m.t}", desc: "${m.d}", data: "${p.datas[idx]}", icon: "${m.i}" }${idx < 4 ? ',' : ''}\n`;
+                });
+
+                content += `        ]\n    },\n`;
+            }
+
+            content += `};\n`;
+
+            const blob = new Blob([content], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'dados-projetos.js';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert("Arquivo 'dados-projetos.js' gerado com sucesso!\n\nAgora: \n1 - Mova-o para a pasta do projeto\n2 - Execute o publicar.bat");
+        }
+
+
         // --- RENDERIZADOR MASTER ---
         function renderBoard() {
             const lists = {
@@ -573,7 +793,11 @@
         }
 
         // Init
-        document.addEventListener('DOMContentLoaded', loadTasks);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTasks();
+            loadClientProjects();
+        });
+
 
     </script>
 </body>
