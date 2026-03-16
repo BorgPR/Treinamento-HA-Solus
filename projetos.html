@@ -427,7 +427,11 @@
                 const response = await fetch(CSV_FILE_PATH + '?t=' + Date.now());
                 if (!response.ok) throw new Error("Arquivo CSV não encontrado");
                 
-                const csvData = await response.text();
+                // Lê como ArrayBuffer para lidar com acentuação do Windows/Excel
+                const buffer = await response.arrayBuffer();
+                const decoder = new TextDecoder('windows-1252'); // Padrão Brasil/Excel
+                const csvData = decoder.decode(buffer);
+                
                 const lines = csvData.split('\n');
                 
                 for (let i = 1; i < lines.length; i++) {
@@ -463,7 +467,17 @@
         }
 
         // Inicia sincronização ao carregar a página
-        window.addEventListener('load', syncWithCSV);
+        window.addEventListener('load', async () => {
+            await syncWithCSV();
+            
+            // Verifica se tem token na URL para login automático (vindo da visão geral)
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenUrl = urlParams.get('token');
+            if (tokenUrl && dbProjetos[tokenUrl.toUpperCase()]) {
+                document.getElementById('token').value = tokenUrl;
+                renderDashboard(tokenUrl.toUpperCase(), dbProjetos[tokenUrl.toUpperCase()]);
+            }
+        });
 
         // --- LÓGICA DO APP ---
         function checkToken() {

@@ -24,3 +24,4 @@ echo PUBLICACAO CONCLUIDA COM SUCESSO!
 echo ==================================================
 echo Pressione qualquer tecla para fechar esta janela...
 pause >nul
+copy /Y " "visaogeral_projetos.html \\172.16.80.15\WebTemp\infra\ 

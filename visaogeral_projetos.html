@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solus HA | Visão Geral de Projetos</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #004a99;
+            --secondary: #c2185b;
+            --success: #10b981;
+            --bg-page: #f0f4f8;
+            --bg-sidebar: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --shadow: 0 10px 40px -10px rgba(0,0,0,0.12);
+        }
+
+        .dark-mode {
+            --bg-page: #020617;
+            --bg-sidebar: #0f172a;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.05);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: all 0.3s;
+        }
+
+        header {
+            background: var(--bg-sidebar);
+            padding: 1rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: 2rem;
+        }
+
+        h1 { margin-bottom: 2rem; font-weight: 800; display: flex; align-items: center; gap: 15px; }
+
+        .project-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .project-table th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .project-table td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .token-badge {
+            font-family: monospace;
+            background: var(--border);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .progress-container {
+            width: 150px;
+            height: 8px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .status-pill {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .status-active { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-done { background: var(--primary); color: white; }
+
+        .btn-theme {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .btn-back {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .project-table thead { display: none; }
+            .project-table tr { display: block; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+            .project-table td { display: block; border: none; padding: 0.5rem 0; }
+        }
+    </style>
+</head>
+<body id="app-body">
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="window.location.href='index.html'">
+            <svg width="180" height="35" viewBox="0 8 280 40">
+                <path d="M 10 15 L 15 15 L 15 33 L 10 33 A 9 9 0 0 1 10 15 Z" fill="#0157c8" />
+                <path d="M 33 15 L 38 15 A 9 9 0 0 1 38 33 L 33 33 Z" fill="#e11c5f" />
+                <path d="M 15 10 A 9 9 0 0 1 33 10 L 33 15 L 15 15 Z" fill="#e11c5f" />
+                <path d="M 15 33 L 33 33 L 33 38 A 9 9 0 0 1 15 38 Z" fill="#00439c" />
+                <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
+                <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
+                <text x="50" y="34" font-family="'Outfit', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
+            </svg>
+        </div>
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <a href="projetos.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Área do Cliente</a>
+            <button class="btn-theme" id="theme-toggle"><i class="fas fa-moon"></i></button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="glass">
+            <h1><i class="fa-solid fa-layer-group" style="color: var(--primary);"></i> Visão Geral dos Projetos</h1>
+
+            <table class="project-table">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Token</th>
+                        <th>Etapa Atual</th>
+                        <th>Progresso</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="project-list">
+                    <!-- Linhas geradas via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Tema
+        (function() {
+            if (localStorage.getItem('solus-theme') === 'dark') {
+                document.getElementById('app-body').classList.add('dark-mode');
+                document.getElementById('theme-toggle').innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        })();
+
+        document.getElementById('theme-toggle').addEventListener('click', function() {
+            var body = document.getElementById('app-body');
+            body.classList.toggle('dark-mode');
+            var isDark = body.classList.contains('dark-mode');
+            this.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
+        });
+
+        // Templates (para saber o total de etapas)
+        const TOTAL_ETAPAS = { "PADRAO": 5, "MIGRACAO": 4 };
+
+        async function loadProjects() {
+            try {
+                const response = await fetch('projetos.csv?t=' + Date.now());
+                const buffer = await response.arrayBuffer();
+                const decoder = new TextDecoder('windows-1252');
+                const csvData = decoder.decode(buffer);
+                const lines = csvData.split('\n');
+                const list = document.getElementById('project-list');
+                list.innerHTML = '';
+
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    const row = lines[i].split(';');
+                    if (row.length < 4) continue;
+
+                    const token = row[0].trim();
+                    const nome = row[1].trim();
+                    const etapaAtual = parseInt(row[2].trim()) || 0;
+                    const template = row[3].trim().toUpperCase();
+                    
+                    const total = TOTAL_ETAPAS[template] || 5;
+                    let percent = total > 1 ? (etapaAtual / (total - 1)) * 100 : 0;
+                    if(percent > 100) percent = 100;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${nome}</strong><br><small style="color:var(--text-muted)">${template}</small></td>
+                        <td><span class="token-badge">${token}</span></td>
+                        <td>Etapa ${etapaAtual + 1} de ${total}</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="progress-container"><div class="progress-fill" style="width: ${percent}%"></div></div>
+                                <span style="font-size:0.8rem; font-weight:700">${Math.round(percent)}%</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-pill ${percent === 100 ? 'status-done' : 'status-active'}">
+                                ${percent === 100 ? 'Finalizado' : 'Em Execução'}
+                            </span>
+                        </td>
+                        <td>
+                            <button onclick="window.location.href='projetos.html?token=${token}'" style="background:none; border:1px solid var(--border); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem; color:var(--primary); font-weight:600;"> Ver Detalhes </button>
+                        </td>
+                    `;
+                    list.appendChild(tr);
+                }
+            } catch (err) {
+                console.error("Erro ao carregar visão geral:", err);
+            }
+        }
+
+        window.addEventListener('load', loadProjects);
+    </script>
+</body>
+</html>
