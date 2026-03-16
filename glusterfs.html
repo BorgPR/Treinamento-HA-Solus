@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -441,9 +441,9 @@
             </div>
             <nav style="margin-left: 20px;">
                 <a href="#" class="nav-link active" onclick="switchPage('sim', this)">Simulador</a>
-                <a href="#" class="nav-link" onclick="switchPage('guia', this)">Guia de Instalac</a>
+                <a href="#" class="nav-link" onclick="switchPage('guia', this)">Guia de Instalação</a>
                 <a href="#" class="nav-link" onclick="switchPage('req', this)">Requisitos</a>
-                <a href="#" class="nav-link" onclick="switchPage('doc', this)">DocumentaÃ§Ã£o</a>
+                <a href="#" class="nav-link" onclick="switchPage('doc', this)">Documentação</a>
             </nav>
         </div>
         <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
@@ -538,15 +538,15 @@
     <div class="page" id="page-guia">
         <div class="doc-content">
             <div class="doc-section">
-                <h2><i class="fa-solid fa-book-bookmark"></i> Roteiro de ImplementaÃ§Ã£o Passo a Passo</h2>
-                <p>Guia técnico consolidado para o deploy de uma infraestrutura HA com replicaÃ§Ã£o tripla de armazenamento usando GlusterFS.</p>
+                <h2><i class="fa-solid fa-book-bookmark"></i> Roteiro de Implementação Passo a Passo</h2>
+                <p>Guia técnico consolidado para o deploy de uma infraestrutura HA com replicação tripla de armazenamento usando GlusterFS.</p>
             </div>
 
             <div class="accordion-container">
                 <!-- Fase 1 -->
                 <div class="accordion-item">
                     <div class="accordion-header">
-                        Fase 1: PreparaÃ§Ã£o da Infraestrutura Base
+                        Fase 1: Preparação da Infraestrutura Base
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="accordion-content">
@@ -568,7 +568,7 @@ curl -fsSL https://get.docker.com | bash</code></pre>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="accordion-content">
-                        <h4 class="font-semibold mb-2">1. FormaÃ§Ã£o do Cluster e Peer Probe</h4>
+                        <h4 class="font-semibold mb-2">1. Formação do Cluster e Peer Probe</h4>
                         <div class="code-block">
                             <pre><code># Em todos os nós:
 sudo systemctl enable --now glusterd
@@ -577,7 +577,7 @@ sudo systemctl enable --now glusterd
 sudo gluster peer probe [IP_DO_NO_2]
 sudo gluster peer probe [IP_DO_NO_3]</code></pre>
                         </div>
-                        <h4 class="font-semibold mb-2 mt-4">2. CriaÃ§Ã£o do Volume Replicado</h4>
+                        <h4 class="font-semibold mb-2 mt-4">2. Criação do Volume Replicado</h4>
                         <div class="code-block">
                             <pre><code># Apenas no Nó 1:
 sudo mkdir -p /data/brick1/docker
@@ -594,7 +594,7 @@ sudo gluster volume start docker-volume</code></pre>
                 <!-- Fase 3 -->
                 <div class="accordion-item">
                     <div class="accordion-header">
-                        Fase 3: OrquestraÃ§Ã£o (Docker Swarm)
+                        Fase 3: Orquestração (Docker Swarm)
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="accordion-content">
@@ -616,7 +616,7 @@ docker swarm join --token [TOKEN_SWARM] [IP_MASTER]:2377</code></pre>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>ConfiguraÃ§Ã£o do <strong>Keepalived</strong> para gerenciar o IP Flutuante (VIP).</p>
+                        <p>Configuração do <strong>Keepalived</strong> para gerenciar o IP Flutuante (VIP).</p>
                         <div class="code-block">
                             <pre><code># /etc/keepalived/keepalived.conf (Exemplo MASTER)
 vrrp_instance VI_1 {
@@ -651,7 +651,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                 <!-- Fase 6 -->
                 <div class="accordion-item">
                     <div class="accordion-header">
-                        Fase 6: ValidaÃ§Ã£o de Alta Disponibilidade
+                        Fase 6: Validação de Alta Disponibilidade
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="accordion-content">
@@ -671,7 +671,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
         <div class="doc-content">
             <div class="doc-section">
                 <h2><i class="fa-solid fa-microchip"></i> Requisitos de Hardware (Por Nó)</h2>
-                <p>ConfiguraÃ§Ã£o recomendadas para um ambiente GlusterFS triplo operando com Docker Swarm.</p>
+                <p>Configuração recomendadas para um ambiente GlusterFS triplo operando com Docker Swarm.</p>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
@@ -719,7 +719,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                     <div>
                         <h4 style="margin: 0; color: var(--accent);">Disco (S.O)</h4>
                         <p style="margin: 5px 0 0; font-size: 0.9rem;">50 GB SSD/NVMe</p>
-                        <span class="tech-pill">PartiÃ§Ã£o Raiz</span>
+                        <span class="tech-pill">Partição Raiz</span>
                     </div>
                 </div>
 
@@ -754,7 +754,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
     <div class="page" id="page-doc">
         <div class="doc-content">
             <div class="doc-section">
-                <h2><i class="fa-solid fa-shield-halved"></i> DocumentaÃ§Ã£o: Fundamentos da Alta Disponibilidade</h2>
+                <h2><i class="fa-solid fa-shield-halved"></i> Documentação: Fundamentos da Alta Disponibilidade</h2>
                 <p>Este apêndice detalha as decisões de arquitetura e o funcionamento técnico das tecnologias apresentadas no simulador.</p>
                 <div style="margin-top: 15px; padding: 15px; background: rgba(99, 102, 241, 0.05); border-radius: 12px; border-left: 4px solid var(--primary);">
                     <strong>Objetivo:</strong> Garantir que o ambiente Solus opere com tolerância a falhas tanto no processamento (Docker) quanto no armazenamento (GlusterFS).

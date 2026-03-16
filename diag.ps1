@@ -1,13 +1,12 @@
-$f = 'projetos.html'
-$bytes = [IO.File]::ReadAllBytes($f)
-$c = [Text.Encoding]::UTF8.GetString($bytes)
-$idx = $c.IndexOf("Sincronizac")
-if ($idx -ge 0) {
-    $excerpt = $c.Substring($idx - 20, 60)
-    $b = [Text.Encoding]::UTF8.GetBytes($excerpt)
-    Write-Host "Hex:"
-    $b | ForEach-Object { "{0:X2}" -f $_ } | Write-Host
-    Write-Host "String: [$excerpt]"
-} else {
-    Write-Host "Nao encontrado"
+$htmls = Get-ChildItem -Filter "*.html"
+foreach ($f in $htmls) {
+    $content = [IO.File]::ReadAllText($f.FullName, [Text.Encoding]::UTF8)
+    $lines = $content -split "`n"
+    for ($i = 0; $i -lt $lines.Count; $i++) {
+        $line = $lines[$i]
+        # Check for corrupted patterns
+        if ($line -match 'Ã|â€|âœ|â„|ac[^çãa-zA-Z0-9]|ac$|ac<') {
+            Write-Host "$($f.Name):$($i+1): $($line.Trim())"
+        }
+    }
 }
