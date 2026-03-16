@@ -404,50 +404,58 @@
         // --- CONFIGURAÇÃO BANCO DE DADOS CSV ---
         const CSV_FILE_PATH = 'projetos.csv'; 
 
-        // Metadados técnicos das etapas (Padrão Solus HA)
-        const ETAPA_META = [
-            { titulo: "Reunião de Kickoff", desc: "Alinhamento arquitetural e aprovação do projeto Solus HA.", icon: "fa-bullhorn" },
-            { titulo: "Provisão de Infra", desc: "Aguardando equipe cliente liberar VMs NVMe e IPs.", icon: "fa-server" },
-            { titulo: "Setup Solus HA", desc: "Instalação do GlusterFS, Keepalived e VIP da aplicação.", icon: "fa-layer-group" },
-            { titulo: "Homologação", desc: "Deploy de contêineres e validação de acessos pela equipe da Unimed.", icon: "fa-vial" },
-            { titulo: "Go-Live", desc: "Mapeamento do DNS final, virada da chave em produção.", icon: "fa-rocket" }
-        ];
+        // Metadados das Etapas por Template
+        const CRONOGRAMAS = {
+            "PADRAO": [
+                { titulo: "Reunião de Kickoff", desc: "Alinhamento arquitetural e aprovação do projeto Solus HA.", icon: "fa-bullhorn" },
+                { titulo: "Provisão de Infra", desc: "Aguardando equipe cliente liberar VMs NVMe e IPs.", icon: "fa-server" },
+                { titulo: "Setup Solus HA", desc: "Instalação do GlusterFS, Keepalived e VIP da aplicação.", icon: "fa-layer-group" },
+                { titulo: "Homologação", desc: "Deploy de contêineres e validação de acessos pela equipe da Unimed.", icon: "fa-vial" },
+                { titulo: "Go-Live", desc: "Mapeamento do DNS final, virada da chave em produção.", icon: "fa-rocket" }
+            ],
+            "MIGRACAO": [
+                { titulo: "Fase 1: Levantamento e Preparação", desc: "Inventário da app, instalação do Docker e inicialização do Swarm Cluster.", icon: "fa-list-check" },
+                { titulo: "Fase 2: Containerização", desc: "Criação de Dockerfiles (Web/DB) e estruturação do arquivo docker-compose.yml.", icon: "fa-box-open" },
+                { titulo: "Fase 3: Homologação e Dados", desc: "Migração de Banco (Dump/Restore), ajuste de paths Linux e deploy para teste.", icon: "fa-vial" },
+                { titulo: "Fase 4: Cutover e Go-Live", desc: "Janela de manutenção, sincronização final dos volumes e virada do DNS.", icon: "fa-rocket" }
+            ]
+        };
 
         // --- SISTEMA DE SINCRONIZAÇÃO ---
         async function syncWithCSV() {
             try {
-                // Adiciona timestamp para evitar cache do navegador ao editar o CSV
                 const response = await fetch(CSV_FILE_PATH + '?t=' + Date.now());
                 if (!response.ok) throw new Error("Arquivo CSV não encontrado");
                 
                 const csvData = await response.text();
                 const lines = csvData.split('\n');
                 
-                // Limpa o banco local antes de popular com o CSV (ou mantém o JS como base)
-                // dbProjetos = {}; 
-
                 for (let i = 1; i < lines.length; i++) {
                     if (!lines[i].trim()) continue;
                     
                     const row = lines[i].split(',');
-                    if (row.length < 3) continue;
+                    if (row.length < 4) continue;
 
                     const token = row[0].trim().toUpperCase();
                     const nome = row[1].trim();
                     const etapaAtual = parseInt(row[2].trim()) || 0;
+                    const template = row[3].trim().toUpperCase();
+
+                    // Seleciona o template ou usa o PADRAO como fallback
+                    const metaRef = CRONOGRAMAS[template] || CRONOGRAMAS["PADRAO"];
 
                     dbProjetos[token] = {
                         nome: nome,
                         etapaAtual: etapaAtual,
-                        etapas: ETAPA_META.map((m, idx) => ({
+                        etapas: metaRef.map((m, idx) => ({
                             ...m,
-                            data: row[3 + idx] ? row[3 + idx].replace(/"/g, '').trim() : "Aguardando..."
+                            data: row[4 + idx] ? row[4 + idx].replace(/"/g, '').trim() : "Aguardando..."
                         }))
                     };
                 }
                 console.log("✔ Sincronização com projetos.csv concluída.");
             } catch (err) {
-                console.warn("ℹ Usando fallback local (dados-projetos.js). Motivo:", err.message);
+                console.warn("ℹ Usando fallback local. Motivo:", err.message);
             }
         }
 

@@ -1,4 +1,4 @@
-Token,Nome,EtapaAtual,DataEtapa1,DataEtapa2,DataEtapa3,DataEtapa4,DataEtapa5
-UNIMED-BELEM,Unimed Belém,1,Concluído,Sendo feito agora...,Aguardando infra,Aguardando,Aguardando
-SANTA-CASA,Santa Casa de Misericórdia,3,Concluído,Concluído,Concluído,Equipe atuando...,Previsto: Próx semana
-CABEFI,cabefi,1,Concluído,Em andamento...,Aguardando...,Aguardando...,Aguardando...
+Token,Nome,EtapaAtual,Template,Data1,Data2,Data3,Data4,Data5
+UNIMED-BELEM,Unimed Belém,1,PADRAO,Concluído,Sendo feito agora...,Aguardando infra,Aguardando,Aguardando
+SANTA-CASA,Santa Casa de Misericórdia,3,PADRAO,Concluído,Concluído,Concluído,Equipe atuando...,Previsto: Próx semana
+CABEF,Cabef (Migração XAMPP),1,MIGRACAO,15/03 a 20/03,Previsto: 21/03,Aguardando,Aguardando,-
