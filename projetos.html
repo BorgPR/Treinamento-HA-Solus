@@ -401,60 +401,117 @@
             localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
         });
 
-        // Carrega o Banco de Dados do arquivo externo (dados-projetos.js)
-        // Isso facilita para a equipe não precisar editar HTML
+        // --- CONFIGURAÇÃO GOOGLE SHEETS ---
+        // 1. Publique sua planilha: Arquivo > Compartilhar > Publicar na Web > Escolha "Página 1" e "CSV"
+        // 2. Cole o link gerado abaixo:
+        const SHEET_CSV_URL = 'SUA_URL_DO_GOOGLE_SHEETS_AQUI'; 
 
+        // Metadados técnicos das etapas (Padrão Solus HA)
+        const ETAPA_META = [
+            { titulo: "Reunião de Kickoff", desc: "Alinhamento arquitetural e aprovação do projeto Solus HA.", icon: "fa-bullhorn" },
+            { titulo: "Provisão de Infra", desc: "Aguardando equipe cliente liberar VMs NVMe e IPs.", icon: "fa-server" },
+            { titulo: "Setup Solus HA", desc: "Instalação do GlusterFS, Keepalived e VIP da aplicação.", icon: "fa-layer-group" },
+            { titulo: "Homologação", desc: "Deploy de contêineres e validação de acessos pela equipe da Unimed.", icon: "fa-vial" },
+            { titulo: "Go-Live", desc: "Mapeamento do DNS final, virada da chave em produção.", icon: "fa-rocket" }
+        ];
 
-        // --- LÓGICA DO APP ---
-        function checkToken() {
-            const input = document.getElementById('token').value.trim().toUpperCase();
-            const err = document.getElementById('error-msg');
-            
-            if (dbProjetos[input]) {
-                err.style.display = 'none';
-                renderDashboard(input, dbProjetos[input]);
-            } else {
-                err.style.display = 'block';
-                // Shake animation opcional //
-                const card = document.querySelector('.auth-card');
-                card.style.transform = 'translateX(10px)';
-                setTimeout(() => card.style.transform = 'translateX(-10px)', 100);
-                setTimeout(() => card.style.transform = 'translateX(10px)', 200);
-                setTimeout(() => card.style.transform = 'translateX(0)', 300);
+        // --- SISTEMA DE SINCRONIZAÇÃO ---
+        async function syncWithGoogleSheets() {
+            if (!SHEET_CSV_URL || SHEET_CSV_URL.includes('SUA_URL')) return;
+
+            try {
+                const response = await fetch(SHEET_CSV_URL);
+                const csvData = await response.text();
+                const lines = csvData.split('\n');
+                
+                // Pula o cabeçalho
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    
+                    // Regex para separar CSV respeitando aspas se houver
+                    const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (row.length < 8) continue;
+
+                    const token = row[0].trim().toUpperCase();
+                    const nome = row[1].trim();
+                    const etapaAtual = parseInt(row[2].trim()) || 0;
+
+                    // Monta o objeto no formato esperado pelo renderDashboard
+                    dbProjetos[token] = {
+                        nome: nome,
+                        etapaAtual: etapaAtual,
+                        etapas: ETAPA_META.map((m, idx) => ({
+                            ...m,
+                            data: row[3 + idx] ? row[3 + idx].replace(/"/g, '').trim() : "Aguardando..."
+                        }))
+                    };
+                }
+                console.log("✔ Sincronização com Google Sheets concluída.");
+            } catch (err) {
+                console.error("❌ Erro ao sincronizar com Google Sheets:", err);
             }
         }
 
+        // Inicia sincronização ao carregar a página
+        window.addEventListener('load', syncWithGoogleSheets);
+
+        // --- LÓGICA DO APP ---
+        function checkToken() {
+            const btn = document.querySelector('.btn-submit');
+            const originalBtnHtml = btn.innerHTML;
+            const input = document.getElementById('token').value.trim().toUpperCase();
+            const err = document.getElementById('error-msg');
+            
+            // Pequeno feedback visual de "buscando"
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Validando...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+
+                if (dbProjetos[input]) {
+                    err.style.display = 'none';
+                    renderDashboard(input, dbProjetos[input]);
+                } else {
+                    err.style.display = 'block';
+                    const card = document.querySelector('.auth-card');
+                    card.style.transform = 'translateX(10px)';
+                    setTimeout(() => card.style.transform = 'translateX(-10px)', 100);
+                    setTimeout(() => card.style.transform = 'translateX(10px)', 200);
+                    setTimeout(() => card.style.transform = 'translateX(0)', 300);
+                }
+            }, 600);
+        }
+
         function renderDashboard(token, dados) {
-            // Oculta tela de login
             document.getElementById('login-view').style.display = 'none';
-            // Mostra tela do projeto
             const dash = document.getElementById('dashboard');
             dash.style.display = 'block';
 
-            // Preenche infos do header
             document.getElementById('cli-nome').textContent = dados.nome;
             document.getElementById('cli-token').textContent = token;
 
-            // Calcula progresso da barra magica (ex: se são 5 etapas, a etapa 2 = 40%)
             const total = dados.etapas.length;
             const concluido = dados.etapaAtual;
             
-            // Calculo para barra encher suave = (atual / (total - 1)) * 100
-            // se ta no 4 de 5, é 100%
             let percent = total > 1 ? (concluido / (total - 1)) * 100 : 0;
             if(percent > 100) percent = 100;
             
             setTimeout(() => {
                 document.getElementById('prog-bar').style.width = percent + '%';
-                // Animate numbers
                 let val = 0;
                 let intv = setInterval(() => {
-                    if(val >= percent) { clearInterval(intv); document.getElementById('prog-percent').textContent = Math.round(percent) + '%'; }
-                    else { val+=2; document.getElementById('prog-percent').textContent = val + '%'; }
+                    if(val >= percent) { 
+                        clearInterval(intv); 
+                        document.getElementById('prog-percent').textContent = Math.round(percent) + '%'; 
+                    } else { 
+                        val+=2; 
+                        document.getElementById('prog-percent').textContent = val + '%'; 
+                    }
                 }, 20);
             }, 300);
 
-            // Mudar tag "Em andamento" pra "Concluido" se ja bateu 100%
             if (percent === 100) {
                 const badge = document.querySelector('.status-badge');
                 badge.className = 'status-badge'; 
@@ -463,27 +520,24 @@
                 badge.innerHTML = '<i class="fa-solid fa-check-double"></i> Projeto Entregue';
             }
 
-            // Constroi a Timeline dinamicamente
             const ctn = document.getElementById('timeline-container');
-            ctn.innerHTML = ''; // limpa antings
+            ctn.innerHTML = ''; 
             
             dados.etapas.forEach((etapa, idx) => {
                 let statusClass = '';
                 let iconeExtra = '';
 
                 if (idx < dados.etapaAtual) {
-                    statusClass = 'done'; // ja passou
+                    statusClass = 'done';
                     iconeExtra = '<i class="fa-solid fa-check" style="margin-left:5px;"></i>';
                 } else if (idx === dados.etapaAtual) {
-                    statusClass = 'active'; // esta fazendo agora
+                    statusClass = 'active';
                     iconeExtra = '<i class="fa-solid fa-spinner fa-spin" style="margin-left:5px;"></i>';
                 }
 
-                // Cria o elemento
                 const item = document.createElement('div');
                 item.className = `timeline-item ${statusClass}`;
                 
-                // Icon do icone fa-check se terminou, senao icone da fase
                 const renderIcon = (statusClass === 'done') ? 'fa-solid fa-check' : `fa-solid ${etapa.icon}`;
 
                 item.innerHTML = `
