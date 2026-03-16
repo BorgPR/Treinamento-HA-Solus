@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -441,9 +441,9 @@
             </div>
             <nav style="margin-left: 20px;">
                 <a href="#" class="nav-link active" onclick="switchPage('sim', this)">Simulador</a>
-                <a href="#" class="nav-link" onclick="switchPage('guia', this)">Guia de InstalaÃ§Ã£o</a>
+                <a href="#" class="nav-link" onclick="switchPage('guia', this)">Guia de Instalac</a>
                 <a href="#" class="nav-link" onclick="switchPage('req', this)">Requisitos</a>
-                <a href="#" class="nav-link" onclick="switchPage('doc', this)">DocumentaÃ§Ã£o</a>
+                <a href="#" class="nav-link" onclick="switchPage('doc', this)">Documentac</a>
             </nav>
         </div>
         <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
@@ -464,7 +464,7 @@
 
                 <div class="nodes-container">
                     <div class="node" id="node1">
-                        <div class="node-title">NÃ³ 01 (MASTER)</div>
+                        <div class="node-title">Nó 01 (MASTER)</div>
                         <div class="docker-area" id="docker-area-1">
                             <span style="font-size: 0.6rem; color: var(--text-muted); position: absolute; top: 5px;">DOCKER SWARM</span>
                             <div class="rebalance-indicator" id="balance-1">SOBRECARREGADO</div>
@@ -478,7 +478,7 @@
                         </div>
                     </div>
                     <div class="node" id="node2">
-                        <div class="node-title">NÃ³ 02 (BACKUP)</div>
+                        <div class="node-title">Nó 02 (BACKUP)</div>
                         <div class="docker-area" id="docker-area-2">
                             <span style="font-size: 0.6rem; color: var(--text-muted); position: absolute; top: 5px;">DOCKER SWARM</span>
                             <div class="rebalance-indicator" id="balance-2">OCIOSO</div>
@@ -492,7 +492,7 @@
                         </div>
                     </div>
                     <div class="node" id="node3">
-                        <div class="node-title">NÃ³ 03 (BACKUP)</div>
+                        <div class="node-title">Nó 03 (BACKUP)</div>
                         <div class="docker-area" id="docker-area-3">
                             <span style="font-size: 0.6rem; color: var(--text-muted); position: absolute; top: 5px;">DOCKER SWARM</span>
                             <div class="rebalance-indicator" id="balance-3">OCIOSO</div>
@@ -511,9 +511,9 @@
             <!-- Control Panel -->
             <aside class="sidebar">
                 <div class="card glass">
-                    <h3 style="margin: 0 0 10px; font-size: 1.1rem;">Monitor de ReplicaÃ§Ã£o</h3>
+                    <h3 style="margin: 0 0 10px; font-size: 1.1rem;">Monitor de Replicac</h3>
                     <div id="explanation" class="explanation-box info-state">
-                        <strong>Cluster Inicializado:</strong> O ambiente estÃ¡ pronto para operaÃ§Ã£o. Use o botÃ£o abaixo para iniciar o fluxo de replicaÃ§Ã£o de dados.
+                        <strong>Cluster Inicializado:</strong> O ambiente está pronto para operac. Use o botão abaixo para iniciar o fluxo de replicac de dados.
                     </div>
                     <div class="controls">
                         <button class="btn btn-primary" id="btn-next">INICIAR SIMULAÃ‡ÃƒO</button>
@@ -525,9 +525,9 @@
                 <div class="card glass">
                     <h4 style="margin: 0 0 10px; font-size: 0.75rem; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 5px;">FLUXO DE DADOS</h4>
                     <div style="font-size: 0.75rem; display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #ec4899; border-radius: 4px;"></div> Escrita SÃ­ncrona</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #ec4899; border-radius: 4px;"></div> Escrita Síncrona</div>
                         <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #10b981; border-radius: 4px;"></div> Leitura de Volume</div>
-                        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 4px;"></div> Healing (Auto-ReaparaÃ§Ã£o)</div>
+                        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 4px;"></div> Healing (Auto-Reaparac)</div>
                     </div>
                 </div>
             </aside>
@@ -538,22 +538,22 @@
     <div class="page" id="page-guia">
         <div class="doc-content">
             <div class="doc-section">
-                <h2><i class="fa-solid fa-book-bookmark"></i> Roteiro de ImplementaÃ§Ã£o Passo a Passo</h2>
-                <p>Guia tÃ©cnico consolidado para o deploy de uma infraestrutura HA com replicaÃ§Ã£o tripla de armazenamento usando GlusterFS.</p>
+                <h2><i class="fa-solid fa-book-bookmark"></i> Roteiro de Implementac Passo a Passo</h2>
+                <p>Guia técnico consolidado para o deploy de uma infraestrutura HA com replicac tripla de armazenamento usando GlusterFS.</p>
             </div>
 
             <div class="accordion-container">
                 <!-- Fase 1 -->
                 <div class="accordion-item">
                     <div class="accordion-header">
-                        Fase 1: PreparaÃ§Ã£o da Infraestrutura Base
+                        Fase 1: Preparac da Infraestrutura Base
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>Instale os pacotes essenciais em todos os trÃªs nÃ³s para garantir que a pilha de software esteja sincronizada.</p>
+                        <p>Instale os pacotes essenciais em todos os três nós para garantir que a pilha de software esteja sincronizada.</p>
                         <div class="code-block">
                             <button class="copy-btn">Copiar</button>
-                            <pre><code># Executar em todos os nÃ³s
+                            <pre><code># Executar em todos os nós
 sudo apt update
 sudo apt install keepalived glusterfs-server -y
 curl -fsSL https://get.docker.com | bash</code></pre>
@@ -568,18 +568,18 @@ curl -fsSL https://get.docker.com | bash</code></pre>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="accordion-content">
-                        <h4 class="font-semibold mb-2">1. FormaÃ§Ã£o do Cluster e Peer Probe</h4>
+                        <h4 class="font-semibold mb-2">1. Formac do Cluster e Peer Probe</h4>
                         <div class="code-block">
-                            <pre><code># Em todos os nÃ³s:
+                            <pre><code># Em todos os nós:
 sudo systemctl enable --now glusterd
 
-# Apenas no NÃ³ 1:
+# Apenas no Nó 1:
 sudo gluster peer probe [IP_DO_NO_2]
 sudo gluster peer probe [IP_DO_NO_3]</code></pre>
                         </div>
-                        <h4 class="font-semibold mb-2 mt-4">2. CriaÃ§Ã£o do Volume Replicado</h4>
+                        <h4 class="font-semibold mb-2 mt-4">2. Criac do Volume Replicado</h4>
                         <div class="code-block">
-                            <pre><code># Apenas no NÃ³ 1:
+                            <pre><code># Apenas no Nó 1:
 sudo mkdir -p /data/brick1/docker
 sudo gluster volume create docker-volume replica 3 transport tcp \
   [IP_NO1]:/data/brick1/docker \
@@ -594,11 +594,11 @@ sudo gluster volume start docker-volume</code></pre>
                 <!-- Fase 3 -->
                 <div class="accordion-item">
                     <div class="accordion-header">
-                        Fase 3: OrquestraÃ§Ã£o (Docker Swarm)
+                        Fase 3: Orquestrac (Docker Swarm)
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>Inicialize o swarm e garanta que os volumes GlusterFS estejam montados no caminho onde o Docker persistirÃ¡ os dados dos serviÃ§os.</p>
+                        <p>Inicialize o swarm e garanta que os volumes GlusterFS estejam montados no caminho onde o Docker persistirá os dados dos serviços.</p>
                         <div class="code-block">
                             <pre><code># No MASTER:
 docker swarm init --advertise-addr [IP_MASTER]
@@ -616,7 +616,7 @@ docker swarm join --token [TOKEN_SWARM] [IP_MASTER]:2377</code></pre>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>ConfiguraÃ§Ã£o do <strong>Keepalived</strong> para gerenciar o IP Flutuante (VIP).</p>
+                        <p>Configurac do <strong>Keepalived</strong> para gerenciar o IP Flutuante (VIP).</p>
                         <div class="code-block">
                             <pre><code># /etc/keepalived/keepalived.conf (Exemplo MASTER)
 vrrp_instance VI_1 {
@@ -639,9 +639,9 @@ vrrp_instance VI_1 {
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>No seu firewall de borda, crie uma regra NAT que redirecione o trÃ¡fego do seu IP pÃºblico (portas 80, 443) para o VIP interno do cluster.</p>
+                        <p>No seu firewall de borda, crie uma regra NAT que redirecione o tráfego do seu IP público (portas 80, 443) para o VIP interno do cluster.</p>
                         <div class="code-block">
-                            <pre><code># Direcionar trÃ¡fego externo para o VIP (192.168.1.100)
+                            <pre><code># Direcionar tráfego externo para o VIP (192.168.1.100)
 # Copiar dados para o novo volume montado
 sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                         </div>
@@ -651,14 +651,14 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                 <!-- Fase 6 -->
                 <div class="accordion-item">
                     <div class="accordion-header">
-                        Fase 6: ValidaÃ§Ã£o de Alta Disponibilidade
+                        Fase 6: Validac de Alta Disponibilidade
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
                     <div class="accordion-content">
                         <ul class="list-disc list-inside space-y-2">
                             <li><strong>Teste de Rede:</strong> Pare o keepalived no Master e veja o VIP migrar.</li>
-                            <li><strong>Teste de Arquivos:</strong> Crie um arquivo em um nÃ³ e veja-o em todos os outros via GlusterFS.</li>
-                            <li><strong>Teste de Swarm:</strong> Desligue um nÃ³ e veja o Docker reiniciar as rÃ©plicas nos nÃ³s ativos.</li>
+                            <li><strong>Teste de Arquivos:</strong> Crie um arquivo em um nó e veja-o em todos os outros via GlusterFS.</li>
+                            <li><strong>Teste de Swarm:</strong> Desligue um nó e veja o Docker reiniciar as réplicas nos nós ativos.</li>
                         </ul>
                     </div>
                 </div>
@@ -670,8 +670,8 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
     <div class="page" id="page-req">
         <div class="doc-content">
             <div class="doc-section">
-                <h2><i class="fa-solid fa-microchip"></i> Requisitos de Hardware (Por NÃ³)</h2>
-                <p>ConfiguraÃ§Ãµes recomendadas para um ambiente GlusterFS triplo operando com Docker Swarm.</p>
+                <h2><i class="fa-solid fa-microchip"></i> Requisitos de Hardware (Por Nó)</h2>
+                <p>Configurac recomendadas para um ambiente GlusterFS triplo operando com Docker Swarm.</p>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
@@ -683,7 +683,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                     <div>
                         <h4 style="margin: 0; color: var(--primary);">Sistema Operacional</h4>
                         <p style="margin: 5px 0 0; font-size: 0.9rem;">Debian 12 ou Ubuntu 22.04 LTS</p>
-                        <span class="tech-pill">EstÃ¡vel</span> <span class="tech-pill">LTS</span>
+                        <span class="tech-pill">Estável</span> <span class="tech-pill">LTS</span>
                     </div>
                 </div>
 
@@ -694,8 +694,8 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                     </div>
                     <div>
                         <h4 style="margin: 0; color: var(--secondary);">Processamento</h4>
-                        <p style="margin: 5px 0 0; font-size: 0.9rem;">2 vCPUs por nÃ³</p>
-                        <span class="tech-pill">MÃ­nimo Sugerido</span>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">2 vCPUs por nó</p>
+                        <span class="tech-pill">Mínimo Sugerido</span>
                     </div>
                 </div>
 
@@ -705,7 +705,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                         <i class="fa-solid fa-memory" style="font-size: 1.5rem;"></i>
                     </div>
                     <div>
-                        <h4 style="margin: 0; color: var(--info);">MemÃ³ria RAM</h4>
+                        <h4 style="margin: 0; color: var(--info);">Memória RAM</h4>
                         <p style="margin: 5px 0 0; font-size: 0.9rem;">8 GB de RAM</p>
                         <span class="tech-pill">DDR4/DDR5</span>
                     </div>
@@ -719,7 +719,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                     <div>
                         <h4 style="margin: 0; color: var(--accent);">Disco (S.O)</h4>
                         <p style="margin: 5px 0 0; font-size: 0.9rem;">50 GB SSD/NVMe</p>
-                        <span class="tech-pill">PartiÃ§Ã£o Raiz</span>
+                        <span class="tech-pill">Partic Raiz</span>
                     </div>
                 </div>
 
@@ -730,19 +730,19 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                     </div>
                     <div>
                         <h4 style="margin: 0; color: var(--success);">Disco de Dados (LVM)</h4>
-                        <p style="margin: 5px 0 0; font-size: 0.9rem;">300 GB (ExpansÃ­vel)</p>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem;">300 GB (Expansível)</p>
                         <span class="tech-pill">Formato LVM</span> <span class="tech-pill">Replicado</span>
                     </div>
                 </div>
 
-                <!-- PrivilÃ©gios (Sudo) -->
+                <!-- Privilégios (Sudo) -->
                 <div class="card glass" style="display: flex; gap: 1rem; align-items: start;">
                     <div style="background: var(--warning); color: white; padding: 12px; border-radius: 12px;">
                         <i class="fa-solid fa-user-shield" style="font-size: 1.5rem;"></i>
                     </div>
                     <div style="min-width: 0;">
-                        <h4 style="margin: 0; color: var(--warning);">PrivilÃ©gios</h4>
-                        <p style="margin: 5px 0 0; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">UsuÃ¡rio com poderes administrativos</p>
+                        <h4 style="margin: 0; color: var(--warning);">Privilégios</h4>
+                        <p style="margin: 5px 0 0; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Usuário com poderes administrativos</p>
                         <span class="tech-pill">Sudo</span> <span class="tech-pill">Root</span>
                     </div>
                 </div>
@@ -754,33 +754,33 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
     <div class="page" id="page-doc">
         <div class="doc-content">
             <div class="doc-section">
-                <h2><i class="fa-solid fa-shield-halved"></i> DocumentaÃ§Ã£o: Fundamentos da Alta Disponibilidade</h2>
-                <p>Este apÃªndice detalha as decisÃµes de arquitetura e o funcionamento tÃ©cnico das tecnologias apresentadas no simulador.</p>
+                <h2><i class="fa-solid fa-shield-halved"></i> Documentac: Fundamentos da Alta Disponibilidade</h2>
+                <p>Este apêndice detalha as decisões de arquitetura e o funcionamento técnico das tecnologias apresentadas no simulador.</p>
                 <div style="margin-top: 15px; padding: 15px; background: rgba(99, 102, 241, 0.05); border-radius: 12px; border-left: 4px solid var(--primary);">
-                    <strong>Objetivo:</strong> Garantir que o ambiente Solus opere com tolerÃ¢ncia a falhas tanto no processamento (Docker) quanto no armazenamento (GlusterFS).
+                    <strong>Objetivo:</strong> Garantir que o ambiente Solus opere com tolerância a falhas tanto no processamento (Docker) quanto no armazenamento (GlusterFS).
                 </div>
             </div>
 
             <div class="doc-section">
-                <h3>1. OrquestraÃ§Ã£o com Docker Swarm</h3>
-                <p>O Swarm gerencia o ciclo de vida dos containers. Sua principal funÃ§Ã£o nesta arquitetura Ã© o <strong>Self-Healing de ServiÃ§os</strong>.</p>
+                <h3>1. Orquestrac com Docker Swarm</h3>
+                <p>O Swarm gerencia o ciclo de vida dos containers. Sua principal func nesta arquitetura é o <strong>Self-Healing de Serviços</strong>.</p>
                 <ul>
-                    <li><strong>Estado Desejado:</strong> Se configuramos 3 rÃ©plicas, o Swarm monitora constantemente. Se uma cai, ele reinstancia em outro nÃ³.</li>
-                    <li><strong>Rebalanceamento:</strong> Por design, o Swarm nÃ£o move containers de volta automaticamente quando um nÃ³ recupera (para evitar instabilidade). O comando <code>--force update</code> Ã© usado manualmente pelo administrador para redistribuir a carga.</li>
+                    <li><strong>Estado Desejado:</strong> Se configuramos 3 réplicas, o Swarm monitora constantemente. Se uma cai, ele reinstancia em outro nó.</li>
+                    <li><strong>Rebalanceamento:</strong> Por design, o Swarm não move containers de volta automaticamente quando um nó recupera (para evitar instabilidade). O comando <code>--force update</code> é usado manualmente pelo administrador para redistribuir a carga.</li>
                 </ul>
             </div>
 
             <div class="doc-section">
                 <h3>2. Armazenamento com GlusterFS</h3>
-                <p>O GlusterFS elimina o ponto Ãºnico de falha do storage tradicional (NAS/SAN).</p>
+                <p>O GlusterFS elimina o ponto único de falha do storage tradicional (NAS/SAN).</p>
                 <ul>
-                    <li><strong>ReplicaÃ§Ã£o Tripla:</strong> Cada bit de dado escrito no volume <code>/docker</code> Ã© replicado sÃ­ncronamente em todos os 3 nÃ³s.</li>
-                    <li><strong>Quorum:</strong> O sistema exige que a maioria dos nÃ³s (50% + 1) esteja online para aceitar escritas. Com 3 nÃ³s, o quorum Ã© 2. Se sobrar apenas 1 nÃ³, o volume entra em "modo de seguranÃ§a" para evitar o <em>Split-Brain</em>.</li>
+                    <li><strong>Replicac Tripla:</strong> Cada bit de dado escrito no volume <code>/docker</code> é replicado síncronamente em todos os 3 nós.</li>
+                    <li><strong>Quorum:</strong> O sistema exige que a maioria dos nós (50% + 1) esteja online para aceitar escritas. Com 3 nós, o quorum é 2. Se sobrar apenas 1 nó, o volume entra em "modo de segurança" para evitar o <em>Split-Brain</em>.</li>
                 </ul>
             </div>
 
             <div class="doc-section">
-                <h3>3. Matriz de OperaÃ§Ã£o (Auto vs. Manual)</h3>
+                <h3>3. Matriz de Operac (Auto vs. Manual)</h3>
                 <style>
                     .tech-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
                     .tech-table th, .tech-table td { border: 1px solid var(--border); padding: 12px; text-align: left; }
@@ -807,34 +807,34 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                 <table class="tech-table">
                     <thead>
                         <tr>
-                            <th>Recurso / CenÃ¡rio</th>
+                            <th>Recurso / Cenário</th>
                             <th>Tipo</th>
                             <th>Comportamento Esperado</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td>DetecÃ§Ã£o de Falha de NÃ³</td>
+                            <td>Detecc de Falha de Nó</td>
                             <td><span class="tag-auto">AUTOMÃTICO</span></td>
-                            <td>Swarm detecta e reinicia containers em nÃ³s saudÃ¡veis em segundos.</td>
+                            <td>Swarm detecta e reinicia containers em nós saudáveis em segundos.</td>
                         </tr>
                         <tr>
                             <td>Sincronismo de Dados</td>
                             <td><span class="tag-auto">AUTOMÃTICO</span></td>
-                            <td>Escrita sÃ­ncrona em todos os Bricks ativos via rede.</td>
+                            <td>Escrita síncrona em todos os Bricks ativos via rede.</td>
                         </tr>
                         <tr>
                             <td>Self-Healing (GlusterFS)</td>
                             <td><span class="tag-auto">AUTOMÃTICO</span></td>
-                            <td>Ao voltar, o nÃ³ sincroniza dados defasados automaticamente.</td>
+                            <td>Ao voltar, o nó sincroniza dados defasados automaticamente.</td>
                         </tr>
                         <tr>
                             <td>Rebalanceamento de Carga</td>
                             <td><span class="tag-manual">MANUAL</span></td>
-                            <td>RedistribuiÃ§Ã£o de containers apÃ³s recuperaÃ§Ã£o do cluster (DecisÃ£o TÃ©cnica).</td>
+                            <td>Redistribuic de containers após recuperac do cluster (Decisão Técnica).</td>
                         </tr>
                         <tr>
-                            <td>ExpansÃ£o de Disco</td>
+                            <td>Expansão de Disco</td>
                             <td><span class="tag-manual">MANUAL</span></td>
                             <td>Ajuste de LVM e Bricks para aumentar a capacidade do volume.</td>
                         </tr>
@@ -969,7 +969,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                     case 1:
                         btnNext.disabled = true;
                         addReplica(0); addReplica(1); addReplica(2);
-                        explanation.innerHTML = '<strong>PASSO 1: DISTRIBUIÃ‡ÃƒO SWARM.</strong> As rÃ©plicas (1 por nÃ³) estÃ£o operando em estado ideal (High Availability).';
+                        explanation.innerHTML = '<strong>PASSO 1: DISTRIBUIÃ‡ÃƒO SWARM.</strong> As réplicas (1 por nó) estão operando em estado ideal (High Availability).';
                         explanation.className = 'explanation-box info-state';
                         btnNext.textContent = 'SIMULAR ESCRITA';
                         setTimeout(() => btnNext.disabled = false, 1000);
@@ -977,7 +977,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                     case 2:
                         replicas.forEach(r => drawLine(r, sharedVolume, 'write'));
                         sharedFile.style.opacity = '1';
-                        explanation.innerHTML = '<strong>PASSO 2: ESCRITA NO VOLUME.</strong> As rÃ©plicas escrevem no diretÃ³rio montado (/docker). O GlusterFS intercepta a chamada.';
+                        explanation.innerHTML = '<strong>PASSO 2: ESCRITA NO VOLUME.</strong> As réplicas escrevem no diretório montado (/docker). O GlusterFS intercepta a chamada.';
                         btnNext.textContent = 'REPLICAR NOS BRICKS';
                         break;
                     case 3:
@@ -987,7 +987,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                             brickFiles.forEach(f => f.style.opacity = '1');
                             syncBricks(false);
                         }, 2000);
-                        explanation.innerHTML = '<strong>PASSO 3: REPLICAÃ‡ÃƒO SÃNCRONA.</strong> O arquivo Ã© gravado simultaneamente nos bricks locais de cada servidor. RedundÃ¢ncia Tripla confirmada.';
+                        explanation.innerHTML = '<strong>PASSO 3: REPLICAÃ‡ÃƒO SÃNCRONA.</strong> O arquivo é gravado simultaneamente nos bricks locais de cada servidor. Redundância Tripla confirmada.';
                         explanation.className = 'explanation-box success-state';
                         btnNext.textContent = 'SIMULAR FALHA DO NÃ“ 2';
                         break;
@@ -1002,7 +1002,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                         brickFiles[1].style.opacity = '0';
                         
                         replicas = replicas.filter(r => r !== res2);
-                        explanation.innerHTML = '<strong>PASSO 4: FALHA DO NÃ“ 2.</strong> O Docker Swarm detectou a queda e moveu <strong>graficamente</strong> a instÃ¢ncia para o NÃ³ 1. <strong>Estado: 2-0-1.</strong>';
+                        explanation.innerHTML = '<strong>PASSO 4: FALHA DO NÃ“ 2.</strong> O Docker Swarm detectou a queda e moveu <strong>graficamente</strong> a instância para o Nó 1. <strong>Estado: 2-0-1.</strong>';
                         explanation.className = 'explanation-box warning-state';
                         btnNext.textContent = 'SIMULAR FALHA DO NÃ“ 3 (PERDA DE QUORUM)';
                         setTimeout(() => btnNext.disabled = false, 1500);
@@ -1025,7 +1025,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                         sharedVolume.style.background = "rgba(239, 68, 68, 0.1)";
                         sharedVolume.style.color = "var(--danger)";
 
-                        explanation.innerHTML = '<strong>PASSO 5: PERDA DE QUORUM (1/3).</strong> O NÃ³ 3 caiu. Todas as instÃ¢ncias estÃ£o no NÃ³ 1. GlusterFS bloqueia escritas por seguranÃ§a.';
+                        explanation.innerHTML = '<strong>PASSO 5: PERDA DE QUORUM (1/3).</strong> O Nó 3 caiu. Todas as instâncias estão no Nó 1. GlusterFS bloqueia escritas por segurança.';
                         explanation.className = 'explanation-box quorum-lost';
                         btnNext.textContent = 'RECUPERAR NÃ“S';
                         setTimeout(() => btnNext.disabled = false, 1500);
@@ -1057,7 +1057,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                             clearLines();
                         }, 2000);
 
-                        explanation.innerHTML = '<strong>PASSO 6: RECUPERAÃ‡ÃƒO.</strong> Os nÃ³s voltaram, mas as instÃ¢ncias <strong>permanecem concentradas no NÃ³ 1</strong>. Veja os alertas de OCIOSO.';
+                        explanation.innerHTML = '<strong>PASSO 6: RECUPERAÃ‡ÃƒO.</strong> Os nós voltaram, mas as instâncias <strong>permanecem concentradas no Nó 1</strong>. Veja os alertas de OCIOSO.';
                         explanation.className = 'explanation-box warning-state';
                         
                         document.getElementById('balance-1').style.display = 'block';
@@ -1070,7 +1070,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
 
                     case 7:
                         // Manual Rebalance back to 1-1-1
-                        explanation.innerHTML = '<strong>PASSO 7: REBALANCEAMENTO MANUAL.</strong> Executando `update --force`. O Swarm redistribui instÃ¢ncias para que haja <strong>exatamente uma em cada nÃ³</strong>.';
+                        explanation.innerHTML = '<strong>PASSO 7: REBALANCEAMENTO MANUAL.</strong> Executando `update --force`. O Swarm redistribui instâncias para que haja <strong>exatamente uma em cada nó</strong>.';
                         explanation.className = 'explanation-box info-state';
                         
                         // Find the grouped replica on node 0

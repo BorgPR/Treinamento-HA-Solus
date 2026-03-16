@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Status de Projetos de Infraestrutura e ImplantaÃ§Ã£o â€” Solus SaÃºde">
+    <meta name="description" content="Status de Projetos de Infraestrutura e Implantac â€” Solus Saúde">
     <title>Solus HA | Ãrea do Cliente - Projetos</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -340,7 +340,7 @@
               <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
               <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
               <text x="50" y="34" font-family="'Outfit', 'Arial', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
-              <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÃšDE DO SEU PLANO</text>
+              <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
             </svg>
         </div>
         
@@ -355,12 +355,12 @@
         <div class="auth-card glass">
             <div class="auth-icon"><i class="fa-duotone fa-solid fa-timeline"></i></div>
             <h1 class="auth-title">Acompanhamento do Projeto</h1>
-            <p class="auth-desc">Insira o cÃ³digo do seu projeto (Token) para visualizar a linha do tempo e o progresso da implantaÃ§Ã£o da sua Infraestrutura Solus HA.</p>
+            <p class="auth-desc">Insira o código do seu projeto (Token) para visualizar a linha do tempo e o progresso da implantação da sua Infraestrutura Solus HA.</p>
             
             <div class="input-group">
                 <label for="token">Token do Projeto (ex: SLX-001)</label>
                 <input type="text" id="token" class="token-input" placeholder="Digite o token recebido" autocomplete="off" onkeypress="if(event.key === 'Enter') checkToken()">
-                <div id="error-msg" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Token nÃ£o encontrado ou invÃ¡lido.</div>
+                <div id="error-msg" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Token não encontrado ou inválido.</div>
             </div>
 
             <button class="btn-submit" onclick="checkToken()">
@@ -374,14 +374,14 @@
         <div class="client-header">
             <div class="client-info">
                 <h1 id="cli-nome">Solus Cliente Exemplo S/A</h1>
-                <p>ImplantaÃ§Ã£o Solus HA v2.0 &nbsp;&bull;&nbsp; <span id="cli-token">SLX-000</span></p>
+                <p>Implantação Solus HA v2.0 &nbsp;&bull;&nbsp; <span id="cli-token">SLX-000</span></p>
             </div>
             <div class="status-badge active"><i class="fa-solid fa-spinner fa-spin-pulse"></i> Em Andamento</div>
         </div>
 
         <div class="progress-box glass">
             <div class="progress-header">
-                <h3>Progresso Geral da ImplantaÃ§Ã£o</h3>
+                <h3>Progresso Geral da Implantação</h3>
                 <div class="progress-percent" id="prog-percent">0%</div>
             </div>
             <div class="progress-bar-bg">
@@ -471,22 +471,22 @@
                         etapas: metaRef.map((m, idx) => ({
                             ...m,
                             data: row[4 + idx] ? row[4 + idx].replace(/"/g, '').trim() : "Aguardando...",
-                            // Se houver uma descriÃ§Ã£o customizada no CSV (Ã­ndice 9 em diante), usa ela. SenÃ£o, usa a do Template.
+                            // Se houver uma descric customizada no CSV (índice 9 em diante), usa ela. Senão, usa a do Template.
                             desc: row[9 + idx] && row[9 + idx].trim() ? row[9 + idx].replace(/"/g, '').trim() : m.desc
                         }))
                     };
                 }
-                console.log("âœ” SincronizaÃ§Ã£o com projetos.csv concluÃ­da.");
+                console.log("âœ” Sincronizac com projetos.csv concluída.");
             } catch (err) {
                 console.warn("â„¹ Usando fallback local. Motivo:", err.message);
             }
         }
 
-        // Inicia sincronizaÃ§Ã£o ao carregar a pÃ¡gina
+        // Inicia sincronizac ao carregar a página
         window.addEventListener('load', async () => {
             await syncWithCSV();
             
-            // Verifica se tem token na URL para login automÃ¡tico (vindo da visÃ£o geral)
+            // Verifica se tem token na URL para login automático (vindo da visão geral)
             const urlParams = new URLSearchParams(window.location.search);
             const tokenUrl = urlParams.get('token');
             if (tokenUrl && dbProjetos[tokenUrl.toUpperCase()]) {
