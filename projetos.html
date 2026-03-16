@@ -471,8 +471,8 @@
                         etapas: metaRef.map((m, idx) => ({
                             ...m,
                             data: row[4 + idx] ? row[4 + idx].replace(/"/g, '').trim() : "Aguardando...",
-                            // Se houver uma descrição customizada no CSV (índice 9 em diante), usa ela. Senão, usa a do Template.
-                            desc: row[9 + idx] && row[9 + idx].trim() ? row[9 + idx].replace(/"/g, '').trim() : m.desc
+                            // Se houver descrição customizada no CSV e não for um traço vazio ('-'), usa ela. Senão, usa a do Template (chumbado).
+                            desc: (row[9 + idx] && row[9 + idx].replace(/"/g, '').trim() && row[9 + idx].replace(/"/g, '').trim() !== '-') ? row[9 + idx].replace(/"/g, '').trim() : m.desc
                         }))
                     };
                 }
