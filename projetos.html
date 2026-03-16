@@ -433,7 +433,8 @@
                 for (let i = 1; i < lines.length; i++) {
                     if (!lines[i].trim()) continue;
                     
-                    const row = lines[i].split(',');
+                    // Split por PONTO E VÍRGULA (melhor para Excel PT-BR)
+                    const row = lines[i].split(';');
                     if (row.length < 4) continue;
 
                     const token = row[0].trim().toUpperCase();
