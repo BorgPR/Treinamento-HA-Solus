@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Automação de Instalação e Configuração Solus HA">
+    <title>Solus HA | Scripts & Automação</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #004a99;
+            --secondary: #c2185b;
+            --accent: #8e24aa;
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+        }
+
+        .dark-mode {
+            --bg-page: #020617;
+            --bg-card: #0f172a;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #1e293b;
+            --code-bg: #000000;
+        }
+
+        * { box-sizing: border-box; transition: background-color 0.3s, color 0.3s; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            padding: 1.2rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .btn-back { 
+            text-decoration: none; 
+            color: var(--text-muted); 
+            font-weight: 600; 
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.03);
+        }
+        .btn-back:hover { background: var(--border); color: var(--text-main); }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; color: var(--primary); }
+        .hero p { color: var(--text-muted); font-size: 1.1rem; }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .step-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .step-item {
+            padding: 20px;
+            border-radius: 16px;
+            background: rgba(0, 74, 153, 0.03);
+            border: 1px solid rgba(0, 74, 153, 0.1);
+        }
+
+        .step-number {
+            width: 32px; height: 32px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .step-item h3 { margin: 0 0 10px; font-size: 1.1rem; }
+        .step-item p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+
+        .code-container {
+            position: relative;
+            background: var(--code-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+
+        .code-header {
+            background: rgba(255,255,255,0.05);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .code-title { color: #94a3b8; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; }
+
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .copy-btn:hover { opacity: 0.9; }
+
+        pre {
+            margin: 0;
+            padding: 20px;
+            color: var(--code-text);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            max-height: 600px;
+        }
+
+        .alert {
+            padding: 20px;
+            border-radius: 16px;
+            background: #fff7ed;
+            border: 1px solid #ffedd5;
+            color: #9a3412;
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .alert i { font-size: 1.5rem; margin-top: 3px; }
+
+        .theme-btn { background: none; border: 1px solid var(--border); border-radius: 10px; padding: 8px; cursor: pointer; color: var(--text-main); }
+
+        /* Syntax Highlight Simplificado */
+        .hl-comment { color: #64748b; }
+        .hl-keyword { color: #f472b6; }
+        .hl-func { color: #38bdf8; }
+        .hl-string { color: #fbbf24; }
+
+    </style>
+</head>
+<body id="app-body">
+    <header>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="logo-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="window.location.href='index.html'">
+                <svg width="210" height="40" viewBox="0 8 280 40" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 10 15 L 15 15 L 15 33 L 10 33 A 9 9 0 0 1 10 15 Z" fill="#0157c8" />
+                  <path d="M 33 15 L 38 15 A 9 9 0 0 1 38 33 L 33 33 Z" fill="#e11c5f" />
+                  <path d="M 15 10 A 9 9 0 0 1 33 10 L 33 15 L 15 15 Z" fill="#e11c5f" />
+                  <path d="M 15 33 L 33 33 L 33 38 A 9 9 0 0 1 15 38 Z" fill="#00439c" />
+                  <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
+                  <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
+                  <text x="50" y="34" font-family="'Outfit', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
+                  <text x="54" y="46" font-family="'Outfit', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
+                </svg>
+            </div>
+        </div>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Portal</a>
+            <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <div style="display: inline-block; padding: 6px 16px; background: rgba(0,74,153,0.1); color: var(--primary); border-radius: 20px; font-weight: 800; font-size: 0.75rem; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                Implementação Facilitada
+            </div>
+            <h1>Automação de Infraestrutura Solus</h1>
+            <p>Utilize nossos scripts validados para preparar, configurar e colocar em produção toda a stack Solus de forma automática.</p>
+        </section>
+
+        <div class="alert">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <div>
+                <strong>Atenção:</strong> O script abaixo deve ser executado em um servidor com <strong>Linux (Debian/Ubuntu/CentOS)</strong> que já possua o <strong>Docker e Swarm</strong> inicializados. Ele realizará alterações em diretórios do sistema e configurações de firewall/rede.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Guia de Execução Rápida</h2>
+            <div class="step-list">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <h3>Preparar Ambiente</h3>
+                    <p>Acesse o servidor via SSH com privilégios de root ou sudo.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <h3>Baixar Script</h3>
+                    <p>Copie o código abaixo e salve como <code>setup-solus.sh</code> no servidor.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <h3>Permissões</h3>
+                    <p>Execute <code>chmod +x setup-solus.sh</code> para tornar o arquivo executável.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <h3>Executar</h3>
+                    <p>Rode <code>./setup-solus.sh</code> e siga as instruções na tela (como definir senha do usuário).</p>
+                </div>
+            </div>
+
+            <div class="code-container">
+                <div class="code-header">
+                    <div class="code-title">setup-solus.sh</div>
+                    <button class="copy-btn" onclick="copyCode()">
+                        <i class="fa-solid fa-copy"></i> Copiar Código
+                    </button>
+                </div>
+                <pre id="script-content">
+<span class="hl-comment">#!/bin/bash</span>
+
+<span class="hl-comment"># --- 1. VERIFICAÇÃO E CRIAÇÃO DO USUÁRIO E GRUPO SOLUS ---</span>
+<span class="hl-keyword">if</span> ! command -v groupadd &> /dev/null; <span class="hl-keyword">then</span>
+    <span class="hl-func">echo</span> <span class="hl-string">"Instalando pacote shadow..."</span>
+    apk add shadow
+<span class="hl-keyword">fi</span>
+
+<span class="hl-keyword">if</span> ! getent group solus > /dev/null; <span class="hl-keyword">then</span>
+    groupadd -g 1000 solus
+<span class="hl-keyword">fi</span>
+
+<span class="hl-keyword">if</span> ! getent passwd solus > /dev/null; <span class="hl-keyword">then</span>
+    useradd -u 1000 -g 1000 -m -s /bin/bash solus
+    passwd solus
+<span class="hl-keyword">fi</span>
+
+<span class="hl-comment"># --- 2. CRIAÇÃO DA REDE DOCKER ---</span>
+<span class="hl-keyword">if</span> ! docker network inspect solus-prd > /dev/null 2>&1; <span class="hl-keyword">then</span>
+    docker network create --driver overlay --attachable solus-prd
+<span class="hl-keyword">fi</span>
+
+<span class="hl-comment"># --- 3. CRIAÇÃO DA ESTRUTURA ---</span>
+criar_estrutura() {
+    <span class="hl-func">mkdir</span> -p /docker/nginx/{logs,config,certs}
+    <span class="hl-func">mkdir</span> -p /docker/backend/config
+    <span class="hl-func">mkdir</span> -p /docker/frontend/{config,img}
+    <span class="hl-func">mkdir</span> -p /docker/apache/{www,config,logs/apache}
+    
+    <span class="hl-func">install</span> -m 664 /dev/null /docker/nginx/config/default.conf
+    <span class="hl-comment"># ... (abreviado para visualização, use o botão copiar para o código completo)</span>
+}
+
+<span class="hl-comment"># O script cria todos os arquivos YAML (nginx, web, api, frontend)</span>
+<span class="hl-comment"># e realiza o deploy das stacks automaticamente.</span>
+
+main() {
+    criar_estrutura
+    <span class="hl-comment"># Preenchimento de YAMLs e Deploy...</span>
+    chown -R solus:solus /docker
+    chmod 600 /docker/nginx/certs/certificado.key
+    <span class="hl-func">docker stack deploy</span> -c nginx.yml proxy
+    <span class="hl-func">docker stack deploy</span> -c web.yml solus
+    <span class="hl-func">docker stack deploy</span> -c api.yml backend
+}
+
+main</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fa-solid fa-list-check"></i> O que este script faz?</h2>
+            <ul style="padding-left: 20px;">
+                <li>Cria usuário e grupo <code>solus</code> com UID/GID 1000.</li>
+                <li>Cria a rede Docker Overway <code>solus-prd</code> para comunicação entre containers.</li>
+                <li>Gera toda a árvore de diretórios em <code>/docker/</code> de forma padronizada.</li>
+                <li>Cria arquivos de configuração base (Nginx, Apache, PHP, APIs).</li>
+                <li>Aplica permissões rígidas de segurança (especialmente para certificados SSL).</li>
+                <li>Realiza o <strong>Deploy Automático</strong> das stacks Docker.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.getElementById('app-body');
+        
+        if (localStorage.getItem('solus-theme') === 'dark') {
+            body.classList.add('dark-mode');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDark = body.classList.contains('dark-mode');
+            themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
+        });
+
+        function copyCode() {
+            // Pegar o conteúdo completo do arquivo salvo no workspace
+            fetch('setup-solus.sh')
+                .then(r => r.text())
+                .then(text => {
+                    navigator.clipboard.writeText(text);
+                    alert('Código copiado com sucesso! Agora você pode colar no seu terminal.');
+                });
+        }
+    </script>
+</body>
+</html>
