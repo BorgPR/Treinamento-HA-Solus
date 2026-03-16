@@ -13,6 +13,7 @@ copy /Y "visaogeral.html" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "glusterfs.html" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "Treinamento_Final_HA.html" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "projetos.html" "\\172.16.80.15\WebTemp\infra\"
+copy /Y "visaogeral_projetos.html" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "dados-projetos.js" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "gerenciamento.html" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "dados-demandas.js" "\\172.16.80.15\WebTemp\infra\"
@@ -24,4 +25,3 @@ echo PUBLICACAO CONCLUIDA COM SUCESSO!
 echo ==================================================
 echo Pressione qualquer tecla para fechar esta janela...
 pause >nul
-copy /Y " "visaogeral_projetos.html \\172.16.80.15\WebTemp\infra\ 
