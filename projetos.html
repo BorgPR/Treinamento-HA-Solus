@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Status de Projetos de Infraestrutura e Implantac â€” Solus Saúde">
-    <title>Solus HA | Ãrea do Cliente - Projetos</title>
+    <title>Solus HA | Área do Cliente - Projetos</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -453,7 +453,7 @@
                 for (let i = 1; i < lines.length; i++) {
                     if (!lines[i].trim()) continue;
                     
-                    // Split por PONTO E VÃRGULA (melhor para Excel PT-BR)
+                    // Split por PONTO E VÍRGULA (melhor para Excel PT-BR)
                     const row = lines[i].split(';');
                     if (row.length < 4) continue;
 
@@ -471,18 +471,18 @@
                         etapas: metaRef.map((m, idx) => ({
                             ...m,
                             data: row[4 + idx] ? row[4 + idx].replace(/"/g, '').trim() : "Aguardando...",
-                            // Se houver uma descric customizada no CSV (índice 9 em diante), usa ela. Senão, usa a do Template.
+                            // Se houver uma descrição customizada no CSV (índice 9 em diante), usa ela. Senão, usa a do Template.
                             desc: row[9 + idx] && row[9 + idx].trim() ? row[9 + idx].replace(/"/g, '').trim() : m.desc
                         }))
                     };
                 }
-                console.log("âœ” Sincronizac com projetos.csv concluída.");
+                console.log("✔ Sincronização com projetos.csv concluída.");
             } catch (err) {
-                console.warn("â„¹ Usando fallback local. Motivo:", err.message);
+                console.warn("ℹ Usando fallback local. Motivo:", err.message);
             }
         }
 
-        // Inicia sincronizac ao carregar a página
+        // Inicia sincronização ao carregar a página
         window.addEventListener('load', async () => {
             await syncWithCSV();
             
@@ -495,7 +495,7 @@
             }
         });
 
-        // --- LÃ“GICA DO APP ---
+        // --- LÓGICA DO APP ---
         function checkToken() {
             const btn = document.querySelector('.btn-submit');
             const originalBtnHtml = btn.innerHTML;

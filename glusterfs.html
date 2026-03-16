@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -436,7 +436,7 @@
                   <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
                   <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
                   <text x="50" y="34" font-family="'Outfit', 'Arial', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
-                  <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÃšDE DO SEU PLANO</text>
+                  <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
                 </svg>
             </div>
             <nav style="margin-left: 20px;">
@@ -516,7 +516,7 @@
                         <strong>Cluster Inicializado:</strong> O ambiente está pronto para operac. Use o botão abaixo para iniciar o fluxo de replicac de dados.
                     </div>
                     <div class="controls">
-                        <button class="btn btn-primary" id="btn-next">INICIAR SIMULAÃ‡ÃƒO</button>
+                        <button class="btn btn-primary" id="btn-next">INICIAR SIMULAÇÃO</button>
                         <button class="btn btn-secondary" id="btn-rebalance" style="display: none; background: var(--success); color: white; border: none;">REBALANCEAR</button>
                         <button class="btn btn-secondary" id="btn-reset">RESETAR</button>
                     </div>
@@ -815,17 +815,17 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                     <tbody>
                         <tr>
                             <td>Detecc de Falha de Nó</td>
-                            <td><span class="tag-auto">AUTOMÃTICO</span></td>
+                            <td><span class="tag-auto">AUTOMÁTICO</span></td>
                             <td>Swarm detecta e reinicia containers em nós saudáveis em segundos.</td>
                         </tr>
                         <tr>
                             <td>Sincronismo de Dados</td>
-                            <td><span class="tag-auto">AUTOMÃTICO</span></td>
+                            <td><span class="tag-auto">AUTOMÁTICO</span></td>
                             <td>Escrita síncrona em todos os Bricks ativos via rede.</td>
                         </tr>
                         <tr>
                             <td>Self-Healing (GlusterFS)</td>
-                            <td><span class="tag-auto">AUTOMÃTICO</span></td>
+                            <td><span class="tag-auto">AUTOMÁTICO</span></td>
                             <td>Ao voltar, o nó sincroniza dados defasados automaticamente.</td>
                         </tr>
                         <tr>
@@ -969,7 +969,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                     case 1:
                         btnNext.disabled = true;
                         addReplica(0); addReplica(1); addReplica(2);
-                        explanation.innerHTML = '<strong>PASSO 1: DISTRIBUIÃ‡ÃƒO SWARM.</strong> As réplicas (1 por nó) estão operando em estado ideal (High Availability).';
+                        explanation.innerHTML = '<strong>PASSO 1: DISTRIBUIÇÃO SWARM.</strong> As réplicas (1 por nó) estão operando em estado ideal (High Availability).';
                         explanation.className = 'explanation-box info-state';
                         btnNext.textContent = 'SIMULAR ESCRITA';
                         setTimeout(() => btnNext.disabled = false, 1000);
@@ -987,9 +987,9 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                             brickFiles.forEach(f => f.style.opacity = '1');
                             syncBricks(false);
                         }, 2000);
-                        explanation.innerHTML = '<strong>PASSO 3: REPLICAÃ‡ÃƒO SÃNCRONA.</strong> O arquivo é gravado simultaneamente nos bricks locais de cada servidor. Redundância Tripla confirmada.';
+                        explanation.innerHTML = '<strong>PASSO 3: REPLICAÇÃO SÍNCRONA.</strong> O arquivo é gravado simultaneamente nos bricks locais de cada servidor. Redundância Tripla confirmada.';
                         explanation.className = 'explanation-box success-state';
-                        btnNext.textContent = 'SIMULAR FALHA DO NÃ“ 2';
+                        btnNext.textContent = 'SIMULAR FALHA DO NÓ 2';
                         break;
                     case 4:
                         // Node 2 fails
@@ -1002,9 +1002,9 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                         brickFiles[1].style.opacity = '0';
                         
                         replicas = replicas.filter(r => r !== res2);
-                        explanation.innerHTML = '<strong>PASSO 4: FALHA DO NÃ“ 2.</strong> O Docker Swarm detectou a queda e moveu <strong>graficamente</strong> a instância para o Nó 1. <strong>Estado: 2-0-1.</strong>';
+                        explanation.innerHTML = '<strong>PASSO 4: FALHA DO NÓ 2.</strong> O Docker Swarm detectou a queda e moveu <strong>graficamente</strong> a instância para o Nó 1. <strong>Estado: 2-0-1.</strong>';
                         explanation.className = 'explanation-box warning-state';
-                        btnNext.textContent = 'SIMULAR FALHA DO NÃ“ 3 (PERDA DE QUORUM)';
+                        btnNext.textContent = 'SIMULAR FALHA DO NÓ 3 (PERDA DE QUORUM)';
                         setTimeout(() => btnNext.disabled = false, 1500);
                         break;
 
@@ -1027,7 +1027,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
 
                         explanation.innerHTML = '<strong>PASSO 5: PERDA DE QUORUM (1/3).</strong> O Nó 3 caiu. Todas as instâncias estão no Nó 1. GlusterFS bloqueia escritas por segurança.';
                         explanation.className = 'explanation-box quorum-lost';
-                        btnNext.textContent = 'RECUPERAR NÃ“S';
+                        btnNext.textContent = 'RECUPERAR NÓS';
                         setTimeout(() => btnNext.disabled = false, 1500);
                         break;
 
@@ -1057,7 +1057,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                             clearLines();
                         }, 2000);
 
-                        explanation.innerHTML = '<strong>PASSO 6: RECUPERAÃ‡ÃƒO.</strong> Os nós voltaram, mas as instâncias <strong>permanecem concentradas no Nó 1</strong>. Veja os alertas de OCIOSO.';
+                        explanation.innerHTML = '<strong>PASSO 6: RECUPERAÇÃO.</strong> Os nós voltaram, mas as instâncias <strong>permanecem concentradas no Nó 1</strong>. Veja os alertas de OCIOSO.';
                         explanation.className = 'explanation-box warning-state';
                         
                         document.getElementById('balance-1').style.display = 'block';
@@ -1095,7 +1095,7 @@ sudo cp -rp /pasta/antiga/* /docker/</code></pre>
                             document.getElementById('balance-3').style.display = 'none';
                             document.getElementById('btn-rebalance').style.display = 'none';
                             btnNext.style.display = 'flex';
-                            btnNext.textContent = 'SIMULAÃ‡ÃƒO CONCLUÃDA';
+                            btnNext.textContent = 'SIMULAÇÃO CONCLUÍDA';
                             btnNext.disabled = true;
                             explanation.innerHTML = '<strong>ALTA DISPONIBILIDADE RESTAURADA.</strong> Cluster balanceado (1-1-1) e dados sincronizados. Ambiente 100% operacional.';
                             explanation.className = 'explanation-box success-state';

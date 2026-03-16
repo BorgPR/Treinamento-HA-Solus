@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -220,7 +220,7 @@
               <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
               <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
               <text x="50" y="34" font-family="'Outfit', 'Arial', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
-              <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÃšDE DO SEU PLANO</text>
+              <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
             </svg>
         </div>
         
@@ -459,7 +459,7 @@
             localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
         });
 
-        // --- SISTEMA DE VISUALIZAÃ‡ÃƒO (TABS) ---
+        // --- SISTEMA DE VISUALIZAÇÃO (TABS) ---
         function switchView(view) {
             document.getElementById('view-kanban').style.display = view === 'kanban' ? 'grid' : 'none';
             document.getElementById('view-lista').style.display = view === 'lista' ? 'block' : 'none';
@@ -746,7 +746,7 @@
             alert("Arquivo 'dados-projetos.js' gerado com sucesso!\n\nAgora: \n1 - Mova-o para a pasta do projeto\n2 - Execute o publicar.bat");
         }
 
-        // --- EXPORTAÃ‡ÃƒO PARA PDF PROFISSIONAL ---
+        // --- EXPORTAÇÃO PARA PDF PROFISSIONAL ---
         function exportToPDF(type) {
             const element = type === 'kanban' ? document.getElementById('view-kanban') : document.getElementById('view-cron');
             const filename = type === 'kanban' ? 'Relatorio_Demandas_TIP.pdf' : 'Cronogramas_Projetos_Solus.pdf';
