@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -234,7 +234,7 @@
             try {
                 const response = await fetch('projetos.csv?t=' + Date.now());
                 const buffer = await response.arrayBuffer();
-                const decoder = new TextDecoder('windows-1252');
+                const decoder = new TextDecoder('windows-1252'); // Excel ANSI
                 const csvData = decoder.decode(buffer);
                 const lines = csvData.split('\n');
                 const list = document.getElementById('project-list');
@@ -267,7 +267,7 @@
                         </td>
                         <td>
                             <span class="status-pill ${percent === 100 ? 'status-done' : 'status-active'}">
-                                ${percent === 100 ? 'Finalizado' : 'Em ExecuÃ§Ã£o'}
+                                ${percent === 100 ? 'Finalizado' : 'Em Execução'}
                             </span>
                         </td>
                         <td>

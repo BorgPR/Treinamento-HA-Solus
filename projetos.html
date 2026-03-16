@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -417,35 +417,35 @@
             localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
         });
 
-        // --- CONFIGURAÃ‡ÃƒO BANCO DE DADOS CSV ---
+        // --- CONFIGURAÇÃO BANCO DE DADOS CSV ---
         const CSV_FILE_PATH = 'projetos.csv'; 
 
         // Metadados das Etapas por Template
         const CRONOGRAMAS = {
             "PADRAO": [
-                { titulo: "ReuniÃ£o de Kickoff", desc: "Alinhamento arquitetural e aprovaÃ§Ã£o do projeto Solus HA.", icon: "fa-bullhorn" },
-                { titulo: "ProvisÃ£o de Infra", desc: "Aguardando equipe cliente liberar VMs NVMe e IPs.", icon: "fa-server" },
-                { titulo: "Setup Solus HA", desc: "InstalaÃ§Ã£o do GlusterFS, Keepalived e VIP da aplicaÃ§Ã£o.", icon: "fa-layer-group" },
-                { titulo: "HomologaÃ§Ã£o", desc: "Deploy de contÃªineres e validaÃ§Ã£o de acessos pela equipe da Unimed.", icon: "fa-vial" },
-                { titulo: "Go-Live", desc: "Mapeamento do DNS final, virada da chave em produÃ§Ã£o.", icon: "fa-rocket" }
+                { titulo: "Reunião de Kickoff", desc: "Alinhamento arquitetural e aprovação do projeto Solus HA.", icon: "fa-bullhorn" },
+                { titulo: "Provisão de Infra", desc: "Aguardando equipe cliente liberar VMs NVMe e IPs.", icon: "fa-server" },
+                { titulo: "Setup Solus HA", desc: "Instalação do GlusterFS, Keepalived e VIP da aplicação.", icon: "fa-layer-group" },
+                { titulo: "Homologação", desc: "Deploy de contêineres e validação de acessos pela equipe da Unimed.", icon: "fa-vial" },
+                { titulo: "Go-Live", desc: "Mapeamento do DNS final, virada da chave em produção.", icon: "fa-rocket" }
             ],
             "MIGRACAO": [
-                { titulo: "Fase 1: Levantamento e PreparaÃ§Ã£o", desc: "InventÃ¡rio da app, instalaÃ§Ã£o do Docker e inicializaÃ§Ã£o do Swarm Cluster.", icon: "fa-list-check" },
-                { titulo: "Fase 2: ContainerizaÃ§Ã£o", desc: "CriaÃ§Ã£o de Dockerfiles (Web/DB) e estruturaÃ§Ã£o do arquivo docker-compose.yml.", icon: "fa-box-open" },
-                { titulo: "Fase 3: HomologaÃ§Ã£o e Dados", desc: "MigraÃ§Ã£o de Banco (Dump/Restore), ajuste de paths Linux e deploy para teste.", icon: "fa-vial" },
-                { titulo: "Fase 4: Cutover e Go-Live", desc: "Janela de manutenÃ§Ã£o, sincronizaÃ§Ã£o final dos volumes e virada do DNS.", icon: "fa-rocket" }
+                { titulo: "Fase 1: Levantamento e Preparação", desc: "Inventário da app, instalação do Docker e inicialização do Swarm Cluster.", icon: "fa-list-check" },
+                { titulo: "Fase 2: Containerização", desc: "Criação de Dockerfiles (Web/DB) e estruturação do arquivo docker-compose.yml.", icon: "fa-box-open" },
+                { titulo: "Fase 3: Homologação e Dados", desc: "Migração de Banco (Dump/Restore), ajuste de paths Linux e deploy para teste.", icon: "fa-vial" },
+                { titulo: "Fase 4: Cutover e Go-Live", desc: "Janela de manutenção, sincronização final dos volumes e virada do DNS.", icon: "fa-rocket" }
             ]
         };
 
-        // --- SISTEMA DE SINCRONIZAÃ‡ÃƒO ---
+        // --- SISTEMA DE SINCRONIZAÇÃO ---
         async function syncWithCSV() {
             try {
                 const response = await fetch(CSV_FILE_PATH + '?t=' + Date.now());
-                if (!response.ok) throw new Error("Arquivo CSV nÃ£o encontrado");
+                if (!response.ok) throw new Error("Arquivo CSV não encontrado");
                 
-                // LÃª como ArrayBuffer para lidar com acentuaÃ§Ã£o do Windows/Excel
+                // Lê como ArrayBuffer para lidar com acentuação do Windows/Excel
                 const buffer = await response.arrayBuffer();
-                const decoder = new TextDecoder('windows-1252'); // PadrÃ£o Brasil/Excel
+                const decoder = new TextDecoder('windows-1252'); // Padrão Brasil/Excel
                 const csvData = decoder.decode(buffer);
                 
                 const lines = csvData.split('\n');
