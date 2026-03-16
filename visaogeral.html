@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -391,12 +391,14 @@
             .toolbar { flex-direction: column !important; align-items: flex-start !important; }
             .view-toggles { width: 100% !important; flex-wrap: wrap !important; }
         }
+        .btn-back { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; padding: 8px 16px; border-radius: 8px; background: rgba(0,0,0,0.03); transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-back:hover { background: var(--border); color: var(--text-main); }
     </style>
 </head>
 <body id="app-body">
     <header>
         <div style="display: flex; align-items: center; gap: 15px;">
-            <div class="logo-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="location.reload()">
+            <div class="logo-container" style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="window.location.href='index.html'">
                 <svg width="210" height="40" viewBox="0 8 280 40" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
                   <path d="M 10 15 L 15 15 L 15 33 L 10 33 A 9 9 0 0 1 10 15 Z" fill="#0157c8" />
                   <path d="M 33 15 L 38 15 A 9 9 0 0 1 38 33 L 33 33 Z" fill="#e11c5f" />
@@ -414,7 +416,10 @@
                 <a href="#" class="nav-link" onclick="switchPage('doc', this)" style="padding: 6px 12px; font-size: 0.85rem;">Documentação</a>
             </nav>
         </div>
-        <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left-long"></i> Portal</a>
+            <button class="theme-btn" id="theme-toggle"><i class="fas fa-moon"></i></button>
+        </div>
     </header>
 
     <main class="main-container">
