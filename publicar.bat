@@ -16,6 +16,7 @@ copy /Y "projetos.html" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "dados-projetos.js" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "gerenciamento.html" "\\172.16.80.15\WebTemp\infra\"
 copy /Y "dados-demandas.js" "\\172.16.80.15\WebTemp\infra\"
+copy /Y "projetos.csv" "\\172.16.80.15\WebTemp\infra\"
 
 echo.
 echo ==================================================

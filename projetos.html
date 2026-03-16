@@ -401,10 +401,8 @@
             localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
         });
 
-        // --- CONFIGURAÇÃO GOOGLE SHEETS ---
-        // 1. Publique sua planilha: Arquivo > Compartilhar > Publicar na Web > Escolha "Página 1" e "CSV"
-        // 2. Cole o link gerado abaixo:
-        const SHEET_CSV_URL = 'SUA_URL_DO_GOOGLE_SHEETS_AQUI'; 
+        // --- CONFIGURAÇÃO BANCO DE DADOS CSV ---
+        const CSV_FILE_PATH = 'projetos.csv'; 
 
         // Metadados técnicos das etapas (Padrão Solus HA)
         const ETAPA_META = [
@@ -416,27 +414,28 @@
         ];
 
         // --- SISTEMA DE SINCRONIZAÇÃO ---
-        async function syncWithGoogleSheets() {
-            if (!SHEET_CSV_URL || SHEET_CSV_URL.includes('SUA_URL')) return;
-
+        async function syncWithCSV() {
             try {
-                const response = await fetch(SHEET_CSV_URL);
+                // Adiciona timestamp para evitar cache do navegador ao editar o CSV
+                const response = await fetch(CSV_FILE_PATH + '?t=' + Date.now());
+                if (!response.ok) throw new Error("Arquivo CSV não encontrado");
+                
                 const csvData = await response.text();
                 const lines = csvData.split('\n');
                 
-                // Pula o cabeçalho
+                // Limpa o banco local antes de popular com o CSV (ou mantém o JS como base)
+                // dbProjetos = {}; 
+
                 for (let i = 1; i < lines.length; i++) {
                     if (!lines[i].trim()) continue;
                     
-                    // Regex para separar CSV respeitando aspas se houver
-                    const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (row.length < 8) continue;
+                    const row = lines[i].split(',');
+                    if (row.length < 3) continue;
 
                     const token = row[0].trim().toUpperCase();
                     const nome = row[1].trim();
                     const etapaAtual = parseInt(row[2].trim()) || 0;
 
-                    // Monta o objeto no formato esperado pelo renderDashboard
                     dbProjetos[token] = {
                         nome: nome,
                         etapaAtual: etapaAtual,
@@ -446,14 +445,14 @@
                         }))
                     };
                 }
-                console.log("✔ Sincronização com Google Sheets concluída.");
+                console.log("✔ Sincronização com projetos.csv concluída.");
             } catch (err) {
-                console.error("❌ Erro ao sincronizar com Google Sheets:", err);
+                console.warn("ℹ Usando fallback local (dados-projetos.js). Motivo:", err.message);
             }
         }
 
         // Inicia sincronização ao carregar a página
-        window.addEventListener('load', syncWithGoogleSheets);
+        window.addEventListener('load', syncWithCSV);
 
         // --- LÓGICA DO APP ---
         function checkToken() {
