@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Status de Projetos de Infraestrutura e Implantação — Solus Saúde">
-    <title>Solus HA | Área do Cliente - Projetos</title>
+    <meta name="description" content="Status de Projetos de Infraestrutura e ImplantaÃ§Ã£o â€” Solus SaÃºde">
+    <title>Solus HA | Ãrea do Cliente - Projetos</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -310,6 +310,22 @@
         .timeline-date { font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-top: 10px; display: inline-block; background: rgba(0,74,153,0.1); padding: 4px 10px; border-radius: 6px; }
         .timeline-item.done .timeline-date { color: var(--success); background: rgba(16, 185, 129, 0.1); }
 
+    
+        /* Responsividade Global Solus HA */
+        @media (max-width: 1100px) {
+            header { padding: 0.9rem 1rem !important; flex-direction: column !important; gap: 1rem !important; text-align: center; }
+            nav { flex-wrap: wrap !important; justify-content: center !important; gap: 0.5rem !important; }
+            main, .main-container, .container, .cards-section { padding: 1rem !important; }
+            .hero { padding: 3rem 1rem 2rem !important; }
+            .hero h1 { font-size: 2.2rem !important; }
+            .hero-stats { gap: 1.5rem !important; }
+            .grid-layout, .cards-grid, .kanban-board, .cron-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+            .sidebar, .control-panel, aside { position: static !important; width: 100% !important; order: 2 !important; margin-top: 1rem !important; }
+            .diagram-area, .simulation-canvas, .diagram-canvas, .diagram { overflow-x: auto !important; justify-content: flex-start !important; padding: 40px 10px !important; }
+            .gateway-container, .zone, .nodes-container, .shared-volume, .cluster-row { min-width: 800px !important; }
+            .toolbar { flex-direction: column !important; align-items: flex-start !important; }
+            .view-toggles { width: 100% !important; flex-wrap: wrap !important; }
+        }
     </style>
 </head>
 <body id="app-body">
@@ -324,7 +340,7 @@
               <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
               <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
               <text x="50" y="34" font-family="'Outfit', 'Arial', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
-              <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
+              <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÃšDE DO SEU PLANO</text>
             </svg>
         </div>
         
@@ -339,12 +355,12 @@
         <div class="auth-card glass">
             <div class="auth-icon"><i class="fa-duotone fa-solid fa-timeline"></i></div>
             <h1 class="auth-title">Acompanhamento do Projeto</h1>
-            <p class="auth-desc">Insira o código do seu projeto (Token) para visualizar a linha do tempo e o progresso da implantação da sua Infraestrutura Solus HA.</p>
+            <p class="auth-desc">Insira o cÃ³digo do seu projeto (Token) para visualizar a linha do tempo e o progresso da implantaÃ§Ã£o da sua Infraestrutura Solus HA.</p>
             
             <div class="input-group">
                 <label for="token">Token do Projeto (ex: SLX-001)</label>
                 <input type="text" id="token" class="token-input" placeholder="Digite o token recebido" autocomplete="off" onkeypress="if(event.key === 'Enter') checkToken()">
-                <div id="error-msg" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Token não encontrado ou inválido.</div>
+                <div id="error-msg" class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Token nÃ£o encontrado ou invÃ¡lido.</div>
             </div>
 
             <button class="btn-submit" onclick="checkToken()">
@@ -358,14 +374,14 @@
         <div class="client-header">
             <div class="client-info">
                 <h1 id="cli-nome">Solus Cliente Exemplo S/A</h1>
-                <p>Implantação Solus HA v2.0 &nbsp;&bull;&nbsp; <span id="cli-token">SLX-000</span></p>
+                <p>ImplantaÃ§Ã£o Solus HA v2.0 &nbsp;&bull;&nbsp; <span id="cli-token">SLX-000</span></p>
             </div>
             <div class="status-badge active"><i class="fa-solid fa-spinner fa-spin-pulse"></i> Em Andamento</div>
         </div>
 
         <div class="progress-box glass">
             <div class="progress-header">
-                <h3>Progresso Geral da Implantação</h3>
+                <h3>Progresso Geral da ImplantaÃ§Ã£o</h3>
                 <div class="progress-percent" id="prog-percent">0%</div>
             </div>
             <div class="progress-bar-bg">
@@ -401,35 +417,35 @@
             localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
         });
 
-        // --- CONFIGURAÇÃO BANCO DE DADOS CSV ---
+        // --- CONFIGURAÃ‡ÃƒO BANCO DE DADOS CSV ---
         const CSV_FILE_PATH = 'projetos.csv'; 
 
         // Metadados das Etapas por Template
         const CRONOGRAMAS = {
             "PADRAO": [
-                { titulo: "Reunião de Kickoff", desc: "Alinhamento arquitetural e aprovação do projeto Solus HA.", icon: "fa-bullhorn" },
-                { titulo: "Provisão de Infra", desc: "Aguardando equipe cliente liberar VMs NVMe e IPs.", icon: "fa-server" },
-                { titulo: "Setup Solus HA", desc: "Instalação do GlusterFS, Keepalived e VIP da aplicação.", icon: "fa-layer-group" },
-                { titulo: "Homologação", desc: "Deploy de contêineres e validação de acessos pela equipe da Unimed.", icon: "fa-vial" },
-                { titulo: "Go-Live", desc: "Mapeamento do DNS final, virada da chave em produção.", icon: "fa-rocket" }
+                { titulo: "ReuniÃ£o de Kickoff", desc: "Alinhamento arquitetural e aprovaÃ§Ã£o do projeto Solus HA.", icon: "fa-bullhorn" },
+                { titulo: "ProvisÃ£o de Infra", desc: "Aguardando equipe cliente liberar VMs NVMe e IPs.", icon: "fa-server" },
+                { titulo: "Setup Solus HA", desc: "InstalaÃ§Ã£o do GlusterFS, Keepalived e VIP da aplicaÃ§Ã£o.", icon: "fa-layer-group" },
+                { titulo: "HomologaÃ§Ã£o", desc: "Deploy de contÃªineres e validaÃ§Ã£o de acessos pela equipe da Unimed.", icon: "fa-vial" },
+                { titulo: "Go-Live", desc: "Mapeamento do DNS final, virada da chave em produÃ§Ã£o.", icon: "fa-rocket" }
             ],
             "MIGRACAO": [
-                { titulo: "Fase 1: Levantamento e Preparação", desc: "Inventário da app, instalação do Docker e inicialização do Swarm Cluster.", icon: "fa-list-check" },
-                { titulo: "Fase 2: Containerização", desc: "Criação de Dockerfiles (Web/DB) e estruturação do arquivo docker-compose.yml.", icon: "fa-box-open" },
-                { titulo: "Fase 3: Homologação e Dados", desc: "Migração de Banco (Dump/Restore), ajuste de paths Linux e deploy para teste.", icon: "fa-vial" },
-                { titulo: "Fase 4: Cutover e Go-Live", desc: "Janela de manutenção, sincronização final dos volumes e virada do DNS.", icon: "fa-rocket" }
+                { titulo: "Fase 1: Levantamento e PreparaÃ§Ã£o", desc: "InventÃ¡rio da app, instalaÃ§Ã£o do Docker e inicializaÃ§Ã£o do Swarm Cluster.", icon: "fa-list-check" },
+                { titulo: "Fase 2: ContainerizaÃ§Ã£o", desc: "CriaÃ§Ã£o de Dockerfiles (Web/DB) e estruturaÃ§Ã£o do arquivo docker-compose.yml.", icon: "fa-box-open" },
+                { titulo: "Fase 3: HomologaÃ§Ã£o e Dados", desc: "MigraÃ§Ã£o de Banco (Dump/Restore), ajuste de paths Linux e deploy para teste.", icon: "fa-vial" },
+                { titulo: "Fase 4: Cutover e Go-Live", desc: "Janela de manutenÃ§Ã£o, sincronizaÃ§Ã£o final dos volumes e virada do DNS.", icon: "fa-rocket" }
             ]
         };
 
-        // --- SISTEMA DE SINCRONIZAÇÃO ---
+        // --- SISTEMA DE SINCRONIZAÃ‡ÃƒO ---
         async function syncWithCSV() {
             try {
                 const response = await fetch(CSV_FILE_PATH + '?t=' + Date.now());
-                if (!response.ok) throw new Error("Arquivo CSV não encontrado");
+                if (!response.ok) throw new Error("Arquivo CSV nÃ£o encontrado");
                 
-                // Lê como ArrayBuffer para lidar com acentuação do Windows/Excel
+                // LÃª como ArrayBuffer para lidar com acentuaÃ§Ã£o do Windows/Excel
                 const buffer = await response.arrayBuffer();
-                const decoder = new TextDecoder('windows-1252'); // Padrão Brasil/Excel
+                const decoder = new TextDecoder('windows-1252'); // PadrÃ£o Brasil/Excel
                 const csvData = decoder.decode(buffer);
                 
                 const lines = csvData.split('\n');
@@ -437,7 +453,7 @@
                 for (let i = 1; i < lines.length; i++) {
                     if (!lines[i].trim()) continue;
                     
-                    // Split por PONTO E VÍRGULA (melhor para Excel PT-BR)
+                    // Split por PONTO E VÃRGULA (melhor para Excel PT-BR)
                     const row = lines[i].split(';');
                     if (row.length < 4) continue;
 
@@ -455,22 +471,22 @@
                         etapas: metaRef.map((m, idx) => ({
                             ...m,
                             data: row[4 + idx] ? row[4 + idx].replace(/"/g, '').trim() : "Aguardando...",
-                            // Se houver uma descrição customizada no CSV (índice 9 em diante), usa ela. Senão, usa a do Template.
+                            // Se houver uma descriÃ§Ã£o customizada no CSV (Ã­ndice 9 em diante), usa ela. SenÃ£o, usa a do Template.
                             desc: row[9 + idx] && row[9 + idx].trim() ? row[9 + idx].replace(/"/g, '').trim() : m.desc
                         }))
                     };
                 }
-                console.log("✔ Sincronização com projetos.csv concluída.");
+                console.log("âœ” SincronizaÃ§Ã£o com projetos.csv concluÃ­da.");
             } catch (err) {
-                console.warn("ℹ Usando fallback local. Motivo:", err.message);
+                console.warn("â„¹ Usando fallback local. Motivo:", err.message);
             }
         }
 
-        // Inicia sincronização ao carregar a página
+        // Inicia sincronizaÃ§Ã£o ao carregar a pÃ¡gina
         window.addEventListener('load', async () => {
             await syncWithCSV();
             
-            // Verifica se tem token na URL para login automático (vindo da visão geral)
+            // Verifica se tem token na URL para login automÃ¡tico (vindo da visÃ£o geral)
             const urlParams = new URLSearchParams(window.location.search);
             const tokenUrl = urlParams.get('token');
             if (tokenUrl && dbProjetos[tokenUrl.toUpperCase()]) {
@@ -479,7 +495,7 @@
             }
         });
 
-        // --- LÓGICA DO APP ---
+        // --- LÃ“GICA DO APP ---
         function checkToken() {
             const btn = document.querySelector('.btn-submit');
             const originalBtnHtml = btn.innerHTML;
@@ -578,3 +594,4 @@
     </script>
 </body>
 </html>
+

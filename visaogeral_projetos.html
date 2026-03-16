@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solus HA | Visão Geral de Projetos</title>
+    <title>Solus HA | VisÃ£o Geral de Projetos</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -150,6 +150,22 @@
             .project-table tr { display: block; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
             .project-table td { display: block; border: none; padding: 0.5rem 0; }
         }
+    
+        /* Responsividade Global Solus HA */
+        @media (max-width: 1100px) {
+            header { padding: 0.9rem 1rem !important; flex-direction: column !important; gap: 1rem !important; text-align: center; }
+            nav { flex-wrap: wrap !important; justify-content: center !important; gap: 0.5rem !important; }
+            main, .main-container, .container, .cards-section { padding: 1rem !important; }
+            .hero { padding: 3rem 1rem 2rem !important; }
+            .hero h1 { font-size: 2.2rem !important; }
+            .hero-stats { gap: 1.5rem !important; }
+            .grid-layout, .cards-grid, .kanban-board, .cron-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+            .sidebar, .control-panel, aside { position: static !important; width: 100% !important; order: 2 !important; margin-top: 1rem !important; }
+            .diagram-area, .simulation-canvas, .diagram-canvas, .diagram { overflow-x: auto !important; justify-content: flex-start !important; padding: 40px 10px !important; }
+            .gateway-container, .zone, .nodes-container, .shared-volume, .cluster-row { min-width: 800px !important; }
+            .toolbar { flex-direction: column !important; align-items: flex-start !important; }
+            .view-toggles { width: 100% !important; flex-wrap: wrap !important; }
+        }
     </style>
 </head>
 <body id="app-body">
@@ -167,14 +183,14 @@
             </svg>
         </div>
         <div style="display: flex; gap: 20px; align-items: center;">
-            <a href="projetos.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Área do Cliente</a>
+            <a href="projetos.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Ãrea do Cliente</a>
             <button class="btn-theme" id="theme-toggle"><i class="fas fa-moon"></i></button>
         </div>
     </header>
 
     <div class="container">
         <div class="glass">
-            <h1><i class="fa-solid fa-layer-group" style="color: var(--primary);"></i> Visão Geral dos Projetos</h1>
+            <h1><i class="fa-solid fa-layer-group" style="color: var(--primary);"></i> VisÃ£o Geral dos Projetos</h1>
 
             <table class="project-table">
                 <thead>
@@ -184,7 +200,7 @@
                         <th>Etapa Atual</th>
                         <th>Progresso</th>
                         <th>Status</th>
-                        <th>Ações</th>
+                        <th>AÃ§Ãµes</th>
                     </tr>
                 </thead>
                 <tbody id="project-list">
@@ -251,7 +267,7 @@
                         </td>
                         <td>
                             <span class="status-pill ${percent === 100 ? 'status-done' : 'status-active'}">
-                                ${percent === 100 ? 'Finalizado' : 'Em Execução'}
+                                ${percent === 100 ? 'Finalizado' : 'Em ExecuÃ§Ã£o'}
                             </span>
                         </td>
                         <td>
@@ -261,7 +277,7 @@
                     list.appendChild(tr);
                 }
             } catch (err) {
-                console.error("Erro ao carregar visão geral:", err);
+                console.error("Erro ao carregar visÃ£o geral:", err);
             }
         }
 
@@ -269,3 +285,4 @@
     </script>
 </body>
 </html>
+

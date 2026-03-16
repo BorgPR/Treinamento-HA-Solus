@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Gestão Operacional de Demandas e Projetos TIP">
-    <title>Solus HA | Gestão Operacional de Demandas e Projetos TIP</title>
+    <meta name="description" content="GestÃ£o Operacional de Demandas e Projetos TIP">
+    <title>Solus HA | GestÃ£o Operacional de Demandas e Projetos TIP</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -140,7 +140,7 @@
         
         .prio-Urgente { color: var(--danger); }
         .prio-Alta { color: var(--warning); }
-        .prio-Média { color: var(--info); }
+        .prio-MÃ©dia { color: var(--info); }
         .prio-Baixa { color: var(--success); }
 
         /* --- VISTA: LISTA (TABLE) --- */
@@ -190,6 +190,22 @@
         .btn-primary { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; width: 100%; margin-top: 10px; font-size: 1rem; }
         .btn-primary:hover { background: #003b7a; }
 
+    
+        /* Responsividade Global Solus HA */
+        @media (max-width: 1100px) {
+            header { padding: 0.9rem 1rem !important; flex-direction: column !important; gap: 1rem !important; text-align: center; }
+            nav { flex-wrap: wrap !important; justify-content: center !important; gap: 0.5rem !important; }
+            main, .main-container, .container, .cards-section { padding: 1rem !important; }
+            .hero { padding: 3rem 1rem 2rem !important; }
+            .hero h1 { font-size: 2.2rem !important; }
+            .hero-stats { gap: 1.5rem !important; }
+            .grid-layout, .cards-grid, .kanban-board, .cron-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+            .sidebar, .control-panel, aside { position: static !important; width: 100% !important; order: 2 !important; margin-top: 1rem !important; }
+            .diagram-area, .simulation-canvas, .diagram-canvas, .diagram { overflow-x: auto !important; justify-content: flex-start !important; padding: 40px 10px !important; }
+            .gateway-container, .zone, .nodes-container, .shared-volume, .cluster-row { min-width: 800px !important; }
+            .toolbar { flex-direction: column !important; align-items: flex-start !important; }
+            .view-toggles { width: 100% !important; flex-wrap: wrap !important; }
+        }
     </style>
 </head>
 <body id="app-body">
@@ -204,7 +220,7 @@
               <polygon points="15 15, 33 15, 15 33" fill="#a51759" />
               <polygon points="33 15, 33 33, 15 33" fill="#004a9e" />
               <text x="50" y="34" font-family="'Outfit', 'Arial', sans-serif" font-weight="900" font-size="28" fill="#00357b" letter-spacing="4">SOLUS</text>
-              <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÚDE DO SEU PLANO</text>
+              <text x="54" y="46" font-family="'Outfit', 'Arial', sans-serif" font-weight="600" font-size="8" fill="#c35577" letter-spacing="3.5">A SAÃšDE DO SEU PLANO</text>
             </svg>
         </div>
         
@@ -219,7 +235,7 @@
         <div class="toolbar">
             <div class="toolbar-title">
                 <i class="fa-duotone fa-solid fa-chart-network"></i>
-                <h1>Gestão de Operações (TIP)</h1>
+                <h1>GestÃ£o de OperaÃ§Ãµes (TIP)</h1>
             </div>
             
             <div class="view-toggles">
@@ -236,14 +252,14 @@
                     <i class="fa-solid fa-timeline"></i> Cronogramas Clientes
                 </button>
 
-                <button class="btn-toggle" onclick="resetBoard()" title="Restaurar de fábrica">
+                <button class="btn-toggle" onclick="resetBoard()" title="Restaurar de fÃ¡brica">
                     <i class="fa-solid fa-rotate-right"></i>
                 </button>
                 <button class="btn-add" style="background: var(--info);" onclick="exportToPDF('kanban')" id="btn-pdf-kanban">
                     <i class="fa-solid fa-file-pdf"></i> Exportar PDF
                 </button>
                 <button class="btn-add" style="background: var(--info); display: none;" onclick="exportToPDF('cron')" id="btn-pdf-cron">
-                    <i class="fa-solid fa-file-pdf"></i> Relatório PDF
+                    <i class="fa-solid fa-file-pdf"></i> RelatÃ³rio PDF
                 </button>
 
             </div>
@@ -262,7 +278,7 @@
 
             <div class="kanban-col k-doing" id="col-execucao" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'execucao')">
                 <div class="k-header">
-                    <span>Em Execução / Setup</span>
+                    <span>Em ExecuÃ§Ã£o / Setup</span>
                     <span class="k-count" id="count-execucao">0</span>
                 </div>
                 <div class="task-list" id="list-execucao"></div>
@@ -270,7 +286,7 @@
 
             <div class="kanban-col k-verify" id="col-homologacao" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'homologacao')">
                 <div class="k-header">
-                    <span>Homologação / Valid.</span>
+                    <span>HomologaÃ§Ã£o / Valid.</span>
                     <span class="k-count" id="count-homologacao">0</span>
                 </div>
                 <div class="task-list" id="list-homologacao"></div>
@@ -278,7 +294,7 @@
 
             <div class="kanban-col k-done" id="col-concluido" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="drop(event, 'concluido')">
                 <div class="k-header">
-                    <span>Concluído (Go Live)</span>
+                    <span>ConcluÃ­do (Go Live)</span>
                     <span class="k-count" id="count-concluido">0</span>
                 </div>
                 <div class="task-list" id="list-concluido"></div>
@@ -295,10 +311,10 @@
                             <th width="80">ID</th>
                             <th>Demanda / Tarefa</th>
                             <th>Cliente / Local</th>
-                            <th>Tag / Módulo</th>
+                            <th>Tag / MÃ³dulo</th>
                             <th>Prioridade / Prazo</th>
                             <th align="center">Status</th>
-                            <th width="50">Ação</th>
+                            <th width="50">AÃ§Ã£o</th>
                         </tr>
                     </thead>
                     <tbody id="table-body">
@@ -315,7 +331,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <div>
                         <h2 style="font-weight: 800; color: var(--accent);"><i class="fa-solid fa-users-gear"></i> Gerenciador de Cronogramas</h2>
-                        <p style="color: var(--text-muted); font-size: 0.9rem;">Crie e edite o que seus clientes vêem na área logada (Timeline do Projeto).</p>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Crie e edite o que seus clientes vÃªem na Ã¡rea logada (Timeline do Projeto).</p>
                     </div>
                     <button class="btn-primary" style="background: var(--accent); width: auto;" onclick="openCronModal()">
                         <i class="fa-solid fa-plus"></i> Novo Cliente / Projeto
@@ -327,10 +343,10 @@
                 </div>
 
                 <div class="export-box">
-                    <h3 style="font-weight: 800;">🚀 Publicar Alterações</h3>
-                    <p style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">Após editar os projetos acima, clique no botão abaixo para gerar o arquivo de sincronização.</p>
+                    <h3 style="font-weight: 800;">ðŸš€ Publicar AlteraÃ§Ãµes</h3>
+                    <p style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 5px;">ApÃ³s editar os projetos acima, clique no botÃ£o abaixo para gerar o arquivo de sincronizaÃ§Ã£o.</p>
                     <button class="btn-export" onclick="exportCronJS()">
-                        <i class="fa-solid fa-file-export"></i> Gerar Arquivo de Sincronização
+                        <i class="fa-solid fa-file-export"></i> Gerar Arquivo de SincronizaÃ§Ã£o
                     </button>
                 </div>
             </div>
@@ -347,8 +363,8 @@
             </div>
             <form id="taskForm" onsubmit="saveNewTask(event)">
                 <div class="form-group">
-                    <label>Título da Tarefa</label>
-                    <input type="text" id="t-titulo" class="form-control" required placeholder="Ex: Deploy de Contêineres Nginx">
+                    <label>TÃ­tulo da Tarefa</label>
+                    <input type="text" id="t-titulo" class="form-control" required placeholder="Ex: Deploy de ContÃªineres Nginx">
                 </div>
                 <div class="form-group">
                     <label>Cliente / Hospedeiro</label>
@@ -359,7 +375,7 @@
                         <label>Prioridade</label>
                         <select id="t-prioridade" class="form-control">
                             <option value="Baixa">Baixa</option>
-                            <option value="Média" selected>Média</option>
+                            <option value="MÃ©dia" selected>MÃ©dia</option>
                             <option value="Alta">Alta</option>
                             <option value="Urgente">Urgente</option>
                         </select>
@@ -389,7 +405,7 @@
                 <div style="display: flex; gap: 15px;">
                     <div class="form-group" style="flex: 1;">
                         <label>Token de Acesso (Ex: UNIMED-01)</label>
-                        <input type="text" id="c-token" class="form-control" required placeholder="Código que o cliente usará">
+                        <input type="text" id="c-token" class="form-control" required placeholder="CÃ³digo que o cliente usarÃ¡">
                     </div>
                     <div class="form-group" style="flex: 2;">
                         <label>Nome do Cliente / Hospital</label>
@@ -400,10 +416,10 @@
                 <div class="form-group">
                     <label>Fase Atual (0 a 4)</label>
                     <select id="c-etapa" class="form-control">
-                        <option value="0">0 - Kickoff (Início)</option>
-                        <option value="1">1 - Provisão de Infra</option>
+                        <option value="0">0 - Kickoff (InÃ­cio)</option>
+                        <option value="1">1 - ProvisÃ£o de Infra</option>
                         <option value="2">2 - Setup Solus HA</option>
-                        <option value="3">3 - Homologação</option>
+                        <option value="3">3 - HomologaÃ§Ã£o</option>
                         <option value="4">4 - Go-Live (Entregue)</option>
                     </select>
                 </div>
@@ -413,7 +429,7 @@
                     <!-- Gerado dinamicamente -->
                     <div style="background: rgba(0,0,0,0.02); padding: 10px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid var(--accent);">
                         <div style="display: flex; gap: 10px; margin-bottom: 5px;">
-                            <input type="text" class="form-control fase-data" placeholder="Data/Status etapa atual (ex: Concluído ou Prev: 20/03)" style="flex: 1;">
+                            <input type="text" class="form-control fase-data" placeholder="Data/Status etapa atual (ex: ConcluÃ­do ou Prev: 20/03)" style="flex: 1;">
                         </div>
                     </div>
                 </div>
@@ -443,7 +459,7 @@
             localStorage.setItem('solus-theme', isDark ? 'dark' : 'light');
         });
 
-        // --- SISTEMA DE VISUALIZAÇÃO (TABS) ---
+        // --- SISTEMA DE VISUALIZAÃ‡ÃƒO (TABS) ---
         function switchView(view) {
             document.getElementById('view-kanban').style.display = view === 'kanban' ? 'grid' : 'none';
             document.getElementById('view-lista').style.display = view === 'lista' ? 'block' : 'none';
@@ -453,7 +469,7 @@
             document.getElementById('btn-lista').className = view === 'lista' ? 'btn-toggle active' : 'btn-toggle';
             document.getElementById('btn-cron').className = view === 'cron' ? 'btn-toggle active' : 'btn-toggle';
 
-            // Ajusta botões de PDF
+            // Ajusta botÃµes de PDF
             document.getElementById('btn-pdf-kanban').style.display = (view === 'kanban' || view === 'lista') ? 'flex' : 'none';
             document.getElementById('btn-pdf-cron').style.display = (view === 'cron') ? 'flex' : 'none';
 
@@ -464,7 +480,7 @@
         function getPrioIcon(p) {
             if (p === 'Urgente') return '<i class="fa-solid fa-triangle-exclamation"></i>';
             if (p === 'Alta') return '<i class="fa-solid fa-angles-up"></i>';
-            if (p === 'Média') return '<i class="fa-solid fa-minus"></i>';
+            if (p === 'MÃ©dia') return '<i class="fa-solid fa-minus"></i>';
             return '<i class="fa-solid fa-angles-down"></i>';
         }
 
@@ -481,8 +497,8 @@
 
         // Seed inicial caso esteja vazio
         const defaultTasks = [
-            { id: "TIP-101", titulo: "Provisão de Cluster Docker", cliente: "Hospital Default", status: "pendente", prioridade: "Alta", prazo: "15/03/2026", tags: "Infra" },
-            { id: "TIP-102", titulo: "Cópia do Banco Oracle", cliente: "Clínica Vida", status: "execucao", prioridade: "Urgente", prazo: "Hoje", tags: "DBA" }
+            { id: "TIP-101", titulo: "ProvisÃ£o de Cluster Docker", cliente: "Hospital Default", status: "pendente", prioridade: "Alta", prazo: "15/03/2026", tags: "Infra" },
+            { id: "TIP-102", titulo: "CÃ³pia do Banco Oracle", cliente: "ClÃ­nica Vida", status: "execucao", prioridade: "Urgente", prazo: "Hoje", tags: "DBA" }
         ];
 
         function loadTasks() {
@@ -501,7 +517,7 @@
         }
 
         function resetBoard() {
-            if(confirm("Deseja apagar todas as tarefas e voltar aos exemplos de fábrica?")) {
+            if(confirm("Deseja apagar todas as tarefas e voltar aos exemplos de fÃ¡brica?")) {
                 tasks = [...defaultTasks];
                 saveTasks();
                 renderBoard();
@@ -509,7 +525,7 @@
         }
 
         function deleteTask(id) {
-            if(confirm("Confirmar a exclusão desta tarefa?")) {
+            if(confirm("Confirmar a exclusÃ£o desta tarefa?")) {
                 tasks = tasks.filter(t => t.id !== id);
                 saveTasks();
                 renderBoard();
@@ -549,7 +565,7 @@
 
         function dragLeave(e) {
             const col = e.target.closest('.kanban-col');
-            // Só remove se estivermos realmente saindo da coluna
+            // SÃ³ remove se estivermos realmente saindo da coluna
             if(col && !col.contains(e.relatedTarget)) {
                 col.classList.remove('drag-over');
             }
@@ -566,12 +582,12 @@
                 if (taskIndex > -1) {
                     tasks[taskIndex].status = newStatus;
                     saveTasks();
-                    renderBoard(); // Re-renderiza tudo para aplicar nas duas visões
+                    renderBoard(); // Re-renderiza tudo para aplicar nas duas visÃµes
                 }
             }
         }
 
-        // Permitir mudança de status rápido pela tabela
+        // Permitir mudanÃ§a de status rÃ¡pido pela tabela
         function cycleStatus(id, currentStatus) {
             const flow = ['pendente', 'execucao', 'homologacao', 'concluido'];
             let nextIndex = flow.indexOf(currentStatus) + 1;
@@ -591,7 +607,7 @@
 
         function saveNewTask(e) {
             e.preventDefault();
-            // Gera um ID aleatório tipo TIP-459
+            // Gera um ID aleatÃ³rio tipo TIP-459
             const newId = "TIP-" + Math.floor(100 + Math.random() * 900);
             
             const newTask = {
@@ -620,8 +636,8 @@
             } else {
                 // Seed inicial basado em dados-projetos.js
                 clientProjects = {
-                    "UNIMED-BELEM": { nome: "Unimed Belém", etapaAtual: 1, datas: ["Concluído", "Sendo feito agora...", "Aguardando infra", "Aguardando", "Aguardando"] },
-                    "SANTA-CASA": { nome: "Santa Casa de Misericórdia", etapaAtual: 3, datas: ["Concluído", "Concluído", "Concluído", "Equipe atuando...", "Previsto: Próx semana"] }
+                    "UNIMED-BELEM": { nome: "Unimed BelÃ©m", etapaAtual: 1, datas: ["ConcluÃ­do", "Sendo feito agora...", "Aguardando infra", "Aguardando", "Aguardando"] },
+                    "SANTA-CASA": { nome: "Santa Casa de MisericÃ³rdia", etapaAtual: 3, datas: ["ConcluÃ­do", "ConcluÃ­do", "ConcluÃ­do", "Equipe atuando...", "Previsto: PrÃ³x semana"] }
                 };
                 saveClientProjects();
             }
@@ -644,12 +660,12 @@
             const p = {
                 nome: nome,
                 etapaAtual: etapa,
-                datas: ["Concluído", "Concluído", "Concluído", "Concluído", "Concluído"] // Default
+                datas: ["ConcluÃ­do", "ConcluÃ­do", "ConcluÃ­do", "ConcluÃ­do", "ConcluÃ­do"] // Default
             };
             
-            // Ajusta as datas baseado na etapa atual (lógica simples)
+            // Ajusta as datas baseado na etapa atual (lÃ³gica simples)
             for(let i=0; i<5; i++) {
-                if(i < etapa) p.datas[i] = "Concluído";
+                if(i < etapa) p.datas[i] = "ConcluÃ­do";
                 else if(i === etapa) p.datas[i] = dataInput || "Em andamento...";
                 else p.datas[i] = "Aguardando...";
             }
@@ -694,11 +710,11 @@
             let content = `// ====================================\n// GERADO AUTOMATICAMENTE VIA PAINEL TIP\n// ====================================\n\nconst dbProjetos = {\n`;
             
             const etapaMeta = [
-                { t: "Reunião de Kickoff", d: "Alinhamento arquitetural e aprovação do projeto Solus HA.", i: "fa-bullhorn" },
-                { t: "Provisão de Infra", d: "Aguardando equipe cliente liberar VMs NVMe e IPs.", i: "fa-server" },
-                { t: "Setup Solus HA", d: "Instalação do GlusterFS, Keepalived e VIP da aplicação.", i: "fa-layer-group" },
-                { t: "Homologação", d: "Deploy de contêineres e validação de acessos pela equipe da Unimed.", i: "fa-vial" },
-                { t: "Go-Live", d: "Mapeamento do DNS final, virada da chave em produção.", i: "fa-rocket" }
+                { t: "ReuniÃ£o de Kickoff", d: "Alinhamento arquitetural e aprovaÃ§Ã£o do projeto Solus HA.", i: "fa-bullhorn" },
+                { t: "ProvisÃ£o de Infra", d: "Aguardando equipe cliente liberar VMs NVMe e IPs.", i: "fa-server" },
+                { t: "Setup Solus HA", d: "InstalaÃ§Ã£o do GlusterFS, Keepalived e VIP da aplicaÃ§Ã£o.", i: "fa-layer-group" },
+                { t: "HomologaÃ§Ã£o", d: "Deploy de contÃªineres e validaÃ§Ã£o de acessos pela equipe da Unimed.", i: "fa-vial" },
+                { t: "Go-Live", d: "Mapeamento do DNS final, virada da chave em produÃ§Ã£o.", i: "fa-rocket" }
             ];
 
             for (let token in clientProjects) {
@@ -730,7 +746,7 @@
             alert("Arquivo 'dados-projetos.js' gerado com sucesso!\n\nAgora: \n1 - Mova-o para a pasta do projeto\n2 - Execute o publicar.bat");
         }
 
-        // --- EXPORTAÇÃO PARA PDF PROFISSIONAL ---
+        // --- EXPORTAÃ‡ÃƒO PARA PDF PROFISSIONAL ---
         function exportToPDF(type) {
             const element = type === 'kanban' ? document.getElementById('view-kanban') : document.getElementById('view-cron');
             const filename = type === 'kanban' ? 'Relatorio_Demandas_TIP.pdf' : 'Cronogramas_Projetos_Solus.pdf';
@@ -744,7 +760,7 @@
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
-            // Notificação visual de processamento
+            // NotificaÃ§Ã£o visual de processamento
             const btn = type === 'kanban' ? document.getElementById('btn-pdf-kanban') : document.getElementById('btn-pdf-cron');
             const originalTxt = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
@@ -816,7 +832,7 @@
                         <div style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-regular fa-clock"></i> ${d.prazo}</div>
                     </td>
                     <td align="center">
-                        <span class="lbl-status lbl-${statusStr}" title="Clique para avançar status" onclick="cycleStatus('${d.id}', '${statusStr}')">
+                        <span class="lbl-status lbl-${statusStr}" title="Clique para avanÃ§ar status" onclick="cycleStatus('${d.id}', '${statusStr}')">
                             ${formatStatusTxt(statusStr)} <i class="fa-solid fa-arrow-right-arrow-left" style="font-size: 0.6rem; margin-left:3px; opacity: 0.5;"></i>
                         </span>
                     </td>
@@ -844,3 +860,4 @@
     </script>
 </body>
 </html>
+
