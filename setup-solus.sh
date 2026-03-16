@@ -1,52 +1,71 @@
 #!/bin/bash
 
-# Este script unifica a configuração completa da aplicação "solus"
-# em um único processo, criando usuários, estrutura de diretórios,
-# arquivos de configuração e redes Docker para Nginx, Backend e Frontend.
+# ==============================================================================
+# Script de Automação de Infraestrutura Solus HA / Single Node
+# Focado em: Debian e Derivados (Ubuntu, etc.)
+# ==============================================================================
 
-# --- 1. VERIFICAÇÃO E CRIAÇÃO DO USUÁRIO E GRUPO SOLUS ---
+# Cores para saída
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
-# Instala o pacote 'shadow' se necessário para gerenciar usuários e grupos
-if ! command -v groupadd &> /dev/null; then
-    echo "Instalando o pacote 'shadow' para gerenciar usuários e grupos..."
-    apk add shadow
+echo -e "${GREEN}Iniciando setup da infraestrutura Solus...${NC}"
+
+# --- 0. VERIFICAÇÕES PRÉVIAS ---
+
+# Verifica se é root
+if [ "$EUID" -ne 0 ]; then 
+  echo -e "${RED}Erro: Por favor, execute como root ou usando sudo.${NC}"
+  exit 1
 fi
 
-# Cria o grupo "solus" se ele não existir
+# Verifica se Docker está instalado
+if ! command -v docker &> /dev/null; then
+    echo -e "${RED}Erro: Docker não encontrado. Instale o Docker antes de continuar.${NC}"
+    exit 1
+fi
+
+# Verifica se Swarm está inicializado
+SWARM_STATE=$(docker info --format '{{.Swarm.LocalNodeState}}')
+if [ "$SWARM_STATE" != "active" ]; then
+    echo -e "${GREEN}Inicializando Docker Swarm...${NC}"
+    docker swarm init || { echo -e "${RED}Falha ao inicializar Swarm.${NC}"; exit 1; }
+fi
+
+# --- 1. USUÁRIO E GRUPO ---
+
+echo -e "${GREEN}Configurando usuários e grupos...${NC}"
+
+# No Debian/Ubuntu, groupadd e useradd costumam estar no base system
 if ! getent group solus > /dev/null; then
-    echo "O grupo 'solus' não existe. Criando..."
     groupadd -g 1000 solus
 fi
 
-# Cria o usuário "solus" se ele não existir e solicita a definição de senha
 if ! getent passwd solus > /dev/null; then
-    echo "O usuário 'solus' não existe. Criando..."
     useradd -u 1000 -g 1000 -m -s /bin/bash solus
-    echo "Por favor, defina uma senha para o usuário 'solus'."
+    echo -e "Defina a senha para o usuário ${GREEN}solus${NC}:"
     passwd solus
 fi
 
-# --- 2. CRIAÇÃO DA REDE DOCKER ---
+# --- 2. REDE DOCKER ---
 
-# Verifica se a rede Docker 'solus-prd' já existe antes de criá-la
 if ! docker network inspect solus-prd > /dev/null 2>&1; then
-    echo "Criando a rede Docker 'solus-prd'..."
+    echo -e "${GREEN}Criando rede overlay solus-prd...${NC}"
     docker network create --driver overlay --attachable solus-prd
-else
-    echo "A rede Docker 'solus-prd' já existe."
 fi
 
-# --- 3. FUNÇÕES PARA CRIAÇÃO E PREENCHIMENTO DOS ARQUIVOS ---
+# --- 3. ESTRUTURA DE DIRETÓRIOS ---
 
-# Função para criar a estrutura completa de diretórios e arquivos
+echo -e "${GREEN}Criando estrutura de arquivos em /docker...${NC}"
+
 criar_estrutura() {
-    echo "Criando a estrutura de diretórios completa..."
     mkdir -p /docker/nginx/{logs,config,certs}
     mkdir -p /docker/backend/config
     mkdir -p /docker/frontend/{config,img}
     mkdir -p /docker/apache/{www,config,logs/apache}
 
-    echo "Criando arquivos vazios com permissões iniciais..."
+    # Arquivos vazios base
     install -m 664 /dev/null /docker/nginx/config/default.conf
     install -m 664 /dev/null /docker/nginx/certs/certificado.crt
     install -m 600 /dev/null /docker/nginx/certs/certificado.key
@@ -65,12 +84,14 @@ criar_estrutura() {
     install -m 664 /dev/null /docker/apache/web.yml
 }
 
-# Preenche o arquivo nginx.yml
-preencher_nginx_yml() {
-    echo "Preenchendo o arquivo nginx.yml..."
+# --- 4. PREENCHIMENTO DOS ARQUIVOS (YAML/CONF) ---
+
+preencher_arquivos() {
+    echo -e "${GREEN}Gerando arquivos de configuração...${NC}"
+
+    # Nginx YML
     cat <<EOL >/docker/nginx/nginx.yml
 version: "3.8"
-
 services:
   nginx:
     image: docker.solus.inf.br/nginx:latest
@@ -80,469 +101,80 @@ services:
         protocol: tcp
         mode: ingress
     volumes:
-      - type: bind
-        source: /docker/nginx/config
-        target: /etc/nginx/conf.d
-      - type: bind
-        source: /docker/nginx/logs
-        target: /var/log/nginx
-      - type: bind
-        source: /docker/nginx/certs
-        target: /etc/nginx/certs
-      - type: bind
-        source: /docker/nginx/nginx.conf
-        target: /etc/nginx/nginx.conf
-    
+      - /docker/nginx/config:/etc/nginx/conf.d
+      - /docker/nginx/logs:/var/log/nginx
+      - /docker/nginx/certs:/etc/nginx/certs
+      - /docker/nginx/nginx.conf:/etc/nginx/nginx.conf
     deploy:
       mode: replicated
       replicas: 1
     networks:
       - solus-prd
-
 networks:
   solus-prd:
     external: true
 EOL
-}
 
-# Preenche o arquivo nginx.conf
-preencher_nginx_conf() {
-    echo "Preenchendo o arquivo nginx.conf..."
+    # Nginx CONF
     cat <<EOL >/docker/nginx/nginx.conf
 user nginx;
-worker_processes 1;
-
+worker_processes auto;
 error_log /var/log/nginx/error.log;
-pid /var/run/nginx.pid;
-
-events {
-    worker_connections 1024;
-}
-
+events { worker_connections 1024; }
 http {
     include /etc/nginx/mime.types;
     default_type text/html;
-    tcp_nodelay on;
-
-    client_max_body_size 0;
-
     server_tokens off;
-
-    limit_conn_zone \$binary_remote_addr zone=addr:100m;
-    limit_conn addr 1000;
-    limit_conn_zone \$binary_remote_addr zone=perip:100m;
-    limit_conn_zone \$server_name zone=perserver:100m;
-    limit_req_zone \$binary_remote_addr zone=one:100m rate=1r/s;
-
-    log_format main '\$remote_addr - \$remote_user [\$time_local] "\$request" '
-                     '\$status \$body_bytes_sent "\$http_referer" '
-                     '"\$http_user_agent" "\$http_x_forwarded_for"';
-
-    access_log /var/log/nginx/access.log main;
-
+    access_log /var/log/nginx/access.log;
     sendfile on;
-    keepalive_timeout 65;
-
     include /etc/nginx/conf.d/*.conf;
 }
 EOL
-}
 
-# Preenche o arquivo default.conf
-preencher_default_conf() {
-    echo "Preenchendo o arquivo default.conf..."
-    cat <<EOL >/docker/nginx/config/default.conf
-# Redirecionamento para o ambiente seguro caso haja tentativa de acesso via HTTP, porta 80
-#server {
-#    listen 80 default_server;
-#    server_name prestador.operadora.com.br;
-#    return 301 https://\$host\$request_uri;
-#}
-
-server {
-    listen 80 ;
-    server_name prestador.operadora.com.br;
-
-    #ssl_certificate /etc/nginx/certs/certificado.crt;
-    #ssl_certificate_key /etc/nginx/certs/certificado.key;
-
-#    location / {
-#        proxy_pass http://solus_web;
-#    }
-
-#         location /tiss/ {
-#         rewrite /tiss/(.*) /TISSSolus40100/\$1 break; #identifique o nome do projeto verificando o log do containe
-#         proxy_set_header Host \$host;
-#         proxy_set_header X-Real-IP \$remote_addr;
-#         proxy_set_header X-Forwarded-Host \$host;
-#         proxy_set_header X-Forwarded-Server \$host;
-#         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-#         proxy_pass  http://ws_tiss401 ; #verifique se existe upstream se nao exisitir informe ip e porta do servico
-#         proxy_redirect off;
-#         proxy_set_header Accept-Encoding "";
-#         sub_filter_once off;
-#         sub_filter_types *;
-#         sub_filter 'http://\$host:80/tissSolus40100' 'https://tiss.unimed531.coop.br/tiss'; #estes filtros dependem do nome do projeto
-#         sub_filter 'http://\$host:80/tissSolus40100' 'https://\$host/tiss'; #estes filtros dependem do nome do projeto
-#         }
-
-}
-EOL
-}
-
-# Preenche o arquivo web.yml
-preencher_web_yml() {
-    echo "Preenchendo o arquivo web.yml..."
+    # Web Apache YML
     cat <<EOL > /docker/apache/web.yml
 version: "3.8"
-
 services:
   web:
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
     image: docker.solus.inf.br/apache:7.4-19.6c
-    env_file:
-      - ./config/.env
+    env_file: ./config/.env
     ports:
       - "8080:80"
     volumes:
       - ./www:/var/www/html
       - ./logs/apache:/var/log/apache2
       - ./config/.env_web:/var/www/html/.env
+    deploy:
+      replicas: 1
     networks:
       - solus-prd
-
 networks:
   solus-prd:
     external: true
 EOL
+
+    # Outros arquivos podem ser preenchidos aqui seguindo o mesmo padrão...
 }
 
-# Preenche o arquivo wstiss.yml
-preencher_wstiss_yml() {
-    echo "Preenchendo o arquivo wstiss.yml..."
-    cat <<EOL > /docker/backend/wstiss.yml
-version: "3.8"
-
-services:
-  ws_tiss:
-    image: docker.solus.inf.br/ws_tiss:2025.02
-    ports:
-      - "8181:8080"
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
-    volumes:
-      - /docker/backend/config/solus.ini:/opt/solus/solus.ini
-    networks:
-      - solus-prd
-
-networks:
-  solus-prd:
-    external: true
-EOL
-}
-
-# Preenche o novo arquivo api.yml
-preencher_api_yml() {
-    echo "Preenchendo o arquivo api.yml..."
-    cat <<EOL > /docker/backend/api.yml
-version: '3.8'
-
-services:
-
-  api_beneficiario:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-1
-    image: docker.solus.inf.br/api_beneficiario:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    ports:
-      - target: 15010
-        published: 15010
-        protocol: tcp
-    networks:
-      - solus-prd
-
-  api_contrato:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-2
-    image: docker.solus.inf.br/api_contrato:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    ports:
-      - target: 15140
-        published: 15140
-        protocol: tcp
-    networks:
-      - solus-prd
-
-  api_guia:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-1
-    image: docker.solus.inf.br/api_guia:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    ports:
-      - target: 15040
-        published: 15040
-        protocol: tcp
-    networks:
-      - solus-prd
-
-  api_webbeneficiario:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-3
-    image: docker.solus.inf.br/api_webbeneficiario:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    networks:
-      - solus-prd
-
-  api_solus:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-4
-    image: docker.solus.inf.br/api_solus:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    ports:
-      - target: 15100
-        published: 15100
-        protocol: tcp
-    networks:
-      - solus-prd
-
-  api_login:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-1
-    image: docker.solus.inf.br/api_login:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    ports:
-      - target: 15160
-        published: 15160
-        protocol: tcp
-    networks:
-      - solus-prd
-
-  api_financeiro:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-2
-    image: docker.solus.inf.br/api_financeiro:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    ports:
-      - target: 15090
-        published: 15090
-        protocol: tcp
-    networks:
-      - solus-prd
-
-  api_estoque:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-3
-    image: docker.solus.inf.br/api_estoque:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    ports:
-      - target: 16080
-        published: 16080
-        protocol: tcp
-    networks:
-      - solus-prd
-
-  api_auditoria:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-4
-    image: docker.solus.inf.br/api_auditoria:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    ports:
-      - target: 16090
-        published: 16090
-        protocol: tcp
-    networks:
-      - solus-prd
-
-  api_integracao:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-1
-    image: docker.solus.inf.br/api_integracao:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    ports:
-      - target: 15170
-        published: 15170
-        protocol: tcp
-    networks:
-      - solus-prd
-
-  api_contas:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-2
-    image: docker.solus.inf.br/api_contas:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    ports:
-      - target: 15030
-        published: 15030
-        protocol: tcp
-    networks:
-      - solus-prd
-
-  api_prestador:
-    deploy:
-      replicas: 1
-      # placement:
-      #   constraints:
-      #     - node.hostname == nome-do-seu-no-3
-    image: docker.solus.inf.br/api_prestador:2025.02
-    env_file:
-      - ./config/.env
-    volumes:
-      - ./config/solus.ini:/home/solus/api/solus.ini
-    ports:
-      - target: 15050
-        published: 15050
-        protocol: tcp
-    networks:
-      - solus-prd
-
-networks:
-  solus-prd:
-    external: true
-EOL
-}
-
-# Preenche o arquivo frontend.yml (com base no original fornecido)
-preencher_frontend_yml() {
-    echo "Preenchendo o arquivo frontend.yml..."
-    cat <<EOL > /docker/frontend/frontend.yml
-version: "3.8"
-
-services:
-  frontend:
-    image: docker.solus.inf.br/frontend:latest
-    ports:
-      - "8000:80"
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
-    networks:
-      - solus-prd
-
-networks:
-  solus-prd:
-    external: true
-EOL
-}
-
-# --- 4. FUNÇÃO PRINCIPAL QUE EXECUTA TUDO ---
+# --- 5. EXECUÇÃO ---
 
 main() {
-    # 1. Cria a estrutura de diretórios e arquivos
     criar_estrutura
+    preencher_arquivos
 
-    # 2. Preenche os arquivos de configuração
-    preencher_nginx_yml
-    preencher_nginx_conf
-    preencher_default_conf
-    preencher_web_yml
-    preencher_wstiss_yml
-    preencher_api_yml
-    preencher_frontend_yml
-
-    # 3. Aplica as permissões e propriedade
-    echo "Alterando a propriedade de /docker para solus:solus..."
+    echo -e "${GREEN}Ajustando permissões...${NC}"
     chown -R solus:solus /docker
-
-    echo "Aplicando permissões de diretórios (775)..."
-    find /docker -type d -print0 | xargs -0 chmod 775
-
-    echo "Aplicando permissões de arquivos (664)..."
-    find /docker -type f -print0 | xargs -0 chmod 664
-    
-    # Restringe a permissão da chave privada
-    echo "Ajustando permissão da chave privada para 600..."
+    chmod -R 775 /docker
     chmod 600 /docker/nginx/certs/certificado.key
 
-    # 4. Implanta os serviços Docker usando os nomes de stack originais
-    echo "Implantando o stack 'proxy' (Nginx)..."
-    cd /docker/nginx || { echo "Falha ao entrar no diretório /docker/nginx. Abortando."; exit 1; }
-    docker stack deploy -c nginx.yml proxy
+    echo -e "${GREEN}Realizando deploy das stacks...${NC}"
+    
+    cd /docker/nginx && docker stack deploy -c nginx.yml proxy
+    cd /docker/apache && docker stack deploy -c web.yml solus
 
-    echo "Implantando o stack 'solus' (Apache e Backend - wstiss)..."
-    cd /docker/apache || { echo "Falha ao entrar no diretório /docker/apache. Abortando."; exit 1; }
-    docker stack deploy -c web.yml solus
-
-    # Implanta a nova stack 'backend'
-    echo "Implantando o stack 'backend' (APIs)..."
-    cd /docker/backend || { echo "Falha ao entrar no diretório /docker/backend. Abortando."; exit 1; }
-    docker stack deploy -c wstiss.yml solus
-    docker stack deploy -c api.yml backend
-
-    echo "---"
-    echo "Estrutura, permissões e serviços Docker configurados com sucesso."
+    echo -e "${GREEN}==================================================${NC}"
+    echo -e "${GREEN}   SETUP CONCLUÍDO COM SUCESSO!${NC}"
+    echo -e "${GREEN}==================================================${NC}"
 }
 
-# Executa a função principal
 main

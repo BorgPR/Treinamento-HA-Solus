@@ -226,7 +226,7 @@
         <div class="alert">
             <i class="fa-solid fa-circle-exclamation"></i>
             <div>
-                <strong>Atenção:</strong> O script abaixo deve ser executado em um servidor com <strong>Linux (Debian/Ubuntu/CentOS)</strong> que já possua o <strong>Docker e Swarm</strong> inicializados. Ele realizará alterações em diretórios do sistema e configurações de firewall/rede.
+                <strong>Atenção:</strong> O script abaixo deve ser executado em um servidor com <strong>Linux (Debian, Ubuntu ou derivados)</strong> que já possua o <strong>Docker</strong> instalado. O script verificará as dependências e inicializará o Swarm automaticamente se necessário.
             </div>
         </div>
 
@@ -235,23 +235,18 @@
             <div class="step-list">
                 <div class="step-item">
                     <div class="step-number">1</div>
-                    <h3>Preparar Ambiente</h3>
-                    <p>Acesse o servidor via SSH com privilégios de root ou sudo.</p>
+                    <h3>Acesso Root</h3>
+                    <p>O script exige privilégios de <code>root</code> ou <code>sudo</code> para criar usuários e gerenciar o Docker.</p>
                 </div>
                 <div class="step-item">
                     <div class="step-number">2</div>
-                    <h3>Baixar Script</h3>
-                    <p>Copie o código abaixo e salve como <code>setup-solus.sh</code> no servidor.</p>
+                    <h3>Salvar Script</h3>
+                    <p>Salve o código como <code>setup-solus.sh</code> e dê permissão: <code>chmod +x setup-solus.sh</code></p>
                 </div>
                 <div class="step-item">
                     <div class="step-number">3</div>
-                    <h3>Permissões</h3>
-                    <p>Execute <code>chmod +x setup-solus.sh</code> para tornar o arquivo executável.</p>
-                </div>
-                <div class="step-item">
-                    <div class="step-number">4</div>
-                    <h3>Executar</h3>
-                    <p>Rode <code>./setup-solus.sh</code> e siga as instruções na tela (como definir senha do usuário).</p>
+                    <h3>Execução</h3>
+                    <p>Rode <code>./setup-solus.sh</code>. O script é inteligente e verificará o estado do Swarm por você.</p>
                 </div>
             </div>
 
@@ -265,48 +260,25 @@
                 <pre id="script-content">
 <span class="hl-comment">#!/bin/bash</span>
 
-<span class="hl-comment"># --- 1. VERIFICAÇÃO E CRIAÇÃO DO USUÁRIO E GRUPO SOLUS ---</span>
-<span class="hl-keyword">if</span> ! command -v groupadd &> /dev/null; <span class="hl-keyword">then</span>
-    <span class="hl-func">echo</span> <span class="hl-string">"Instalando pacote shadow..."</span>
-    apk add shadow
+<span class="hl-comment"># --- VERIFICAÇÃO DE AMBIENTE ---</span>
+<span class="hl-keyword">if</span> [ <span class="hl-string">"$EUID"</span> -ne 0 ]; <span class="hl-keyword">then</span> 
+  <span class="hl-func">echo</span> <span class="hl-string">"Execute como root!"</span>; <span class="hl-func">exit</span> 1
 <span class="hl-keyword">fi</span>
 
-<span class="hl-keyword">if</span> ! getent group solus > /dev/null; <span class="hl-keyword">then</span>
-    groupadd -g 1000 solus
+<span class="hl-comment"># --- SETUP SWARM ---</span>
+SWARM_STATE=$(docker info --format <span class="hl-string">'{{.Swarm.LocalNodeState}}'</span>)
+<span class="hl-keyword">if</span> [ <span class="hl-string">"$SWARM_STATE"</span> != <span class="hl-string">"active"</span> ]; <span class="hl-keyword">then</span>
+    docker swarm init
 <span class="hl-keyword">fi</span>
 
-<span class="hl-keyword">if</span> ! getent passwd solus > /dev/null; <span class="hl-keyword">then</span>
-    useradd -u 1000 -g 1000 -m -s /bin/bash solus
-    passwd solus
-<span class="hl-keyword">fi</span>
-
-<span class="hl-comment"># --- 2. CRIAÇÃO DA REDE DOCKER ---</span>
-<span class="hl-keyword">if</span> ! docker network inspect solus-prd > /dev/null 2>&1; <span class="hl-keyword">then</span>
-    docker network create --driver overlay --attachable solus-prd
-<span class="hl-keyword">fi</span>
-
-<span class="hl-comment"># --- 3. CRIAÇÃO DA ESTRUTURA ---</span>
-criar_estrutura() {
-    <span class="hl-func">mkdir</span> -p /docker/nginx/{logs,config,certs}
-    <span class="hl-func">mkdir</span> -p /docker/backend/config
-    <span class="hl-func">mkdir</span> -p /docker/frontend/{config,img}
-    <span class="hl-func">mkdir</span> -p /docker/apache/{www,config,logs/apache}
-    
-    <span class="hl-func">install</span> -m 664 /dev/null /docker/nginx/config/default.conf
-    <span class="hl-comment"># ... (abreviado para visualização, use o botão copiar para o código completo)</span>
-}
-
-<span class="hl-comment"># O script cria todos os arquivos YAML (nginx, web, api, frontend)</span>
-<span class="hl-comment"># e realiza o deploy das stacks automaticamente.</span>
-
+<span class="hl-comment"># --- ESTRUTURA E DEPLOY ---</span>
 main() {
     criar_estrutura
-    <span class="hl-comment"># Preenchimento de YAMLs e Deploy...</span>
-    chown -R solus:solus /docker
-    chmod 600 /docker/nginx/certs/certificado.key
+    preencher_arquivos
+    
+    <span class="hl-func">chown</span> -R solus:solus /docker
     <span class="hl-func">docker stack deploy</span> -c nginx.yml proxy
     <span class="hl-func">docker stack deploy</span> -c web.yml solus
-    <span class="hl-func">docker stack deploy</span> -c api.yml backend
 }
 
 main</pre>
