@@ -196,11 +196,9 @@
                 <thead>
                     <tr>
                         <th>Cliente</th>
-                        <th>Token</th>
                         <th>Etapa Atual</th>
                         <th>Progresso</th>
                         <th>Status</th>
-                        <th>Ac</th>
                     </tr>
                 </thead>
                 <tbody id="project-list">
@@ -257,7 +255,6 @@
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><strong>${nome}</strong></td>
-                        <td><span class="token-badge">${token}</span></td>
                         <td>Etapa ${etapaAtual + 1} de ${total}</td>
                         <td>
                             <div style="display:flex; align-items:center; gap:10px;">
@@ -269,9 +266,6 @@
                             <span class="status-pill ${percent === 100 ? 'status-done' : 'status-active'}">
                                 ${percent === 100 ? 'Finalizado' : 'Em Execução'}
                             </span>
-                        </td>
-                        <td>
-                            <button onclick="window.location.href='projetos.html?token=${token}'" style="background:none; border:1px solid var(--border); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem; color:var(--primary); font-weight:600;"> Ver Detalhes </button>
                         </td>
                     `;
                     list.appendChild(tr);
